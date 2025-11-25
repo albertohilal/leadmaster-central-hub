@@ -55,21 +55,25 @@ async function detectBlocks() {
       const metadata = await sharp(pagePath).metadata();
       const { width, height } = metadata;
 
-      // Split into two equal vertical halves
-      const halfHeight = Math.floor(height / 2);
+      // Split with overlap to avoid cutting products
+      // Top block: from 0% to 55% (with 5% overlap)
+      // Bottom block: from 45% to 100% (with 5% overlap)
+      const topHeight = Math.floor(height * 0.55);
+      const bottomStart = Math.floor(height * 0.45);
+      const bottomHeight = height - bottomStart;
 
-      // Extract top half
+      // Extract top block (with overlap)
       const topOutputPath = path.join(OUTPUT_DIR, `page-${pageNumber}_top.png`);
       await sharp(pagePath)
-        .extract({ left: 0, top: 0, width: width, height: halfHeight })
+        .extract({ left: 0, top: 0, width: width, height: topHeight })
         .toFile(topOutputPath);
       console.log(`   ✅ Created: page-${pageNumber}_top.png`);
       totalBlocks++;
 
-      // Extract bottom half
+      // Extract bottom block (with overlap)
       const bottomOutputPath = path.join(OUTPUT_DIR, `page-${pageNumber}_bottom.png`);
       await sharp(pagePath)
-        .extract({ left: 0, top: halfHeight, width: width, height: height - halfHeight })
+        .extract({ left: 0, top: bottomStart, width: width, height: bottomHeight })
         .toFile(bottomOutputPath);
       console.log(`   ✅ Created: page-${pageNumber}_bottom.png`);
       totalBlocks++;

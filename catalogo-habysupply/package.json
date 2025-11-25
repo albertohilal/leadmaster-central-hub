@@ -9,9 +9,12 @@
     "detect:blocks": "node scripts/detect_blocks.js",
     "parse:text": "node scripts/parse_text.js",
     "extract:images": "node scripts/extract_images.js",
+    "extract:products-ai": "node scripts/extract_products_ai.js",
+    "extract:products-color": "node scripts/extract_products_color.js",
+    "download:web": "node scripts/download_from_web.js",
     "match:sku": "node scripts/match_images_to_sku.js",
     "to:mysql": "node scripts/to_mysql.js",
-    "process:all": "npm run extract:pages && npm run detect:blocks && npm run parse:text && npm run extract:images && npm run match:sku"
+    "process:all": "npm run extract:pages && npm run detect:blocks && npm run parse:text && npm run extract:products-color && npm run match:sku"
   },
   "keywords": [
     "pdf",
@@ -24,13 +27,14 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "pdf-poppler": "^0.2.1",
-    "pdf-parse": "^1.1.1",
-    "sharp": "^0.33.5",
+    "dotenv": "^16.4.5",
     "jimp": "^0.22.12",
-    "tesseract.js": "^5.1.1",
     "mysql2": "^3.11.3",
     "openai": "^4.67.3",
-    "dotenv": "^16.4.5"
+    "pdf-parse": "^1.1.1",
+    "pdf-poppler": "^0.2.1",
+    "pdf2pic": "^3.2.0",
+    "sharp": "^0.33.5",
+    "tesseract.js": "^5.1.1"
   }
 }

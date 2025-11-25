@@ -1,9 +1,12 @@
-import { convert } from 'pdf-poppler';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+const execAsync = promisify(exec);
 
 const PDF_INPUT_PATH = process.env.PDF_INPUT_PATH || './pdf/catalogo.pdf';
 const OUTPUT_DIR = process.env.OUTPUT_PAGES_DIR || './output/pages';
@@ -35,28 +38,30 @@ async function extractPages() {
     });
     console.log('🗑️  Cleared existing output files');
 
-    // Convert PDF to images
-    const options = {
-      format: 'png',
-      out_dir: OUTPUT_DIR,
-      out_prefix: 'page',
-      page: null, // Convert all pages
-      scale: 2048 // High resolution for better OCR
-    };
-
     console.log('⏳ Converting PDF pages to PNG...');
-    await convert(PDF_INPUT_PATH, options);
+    
+    // Use pdftoppm to convert PDF to PNG
+    const command = `pdftoppm -png -r 300 "${PDF_INPUT_PATH}" "${OUTPUT_DIR}/page"`;
+    
+    await execAsync(command);
 
     // Count and list generated files
     const generatedFiles = fs.readdirSync(OUTPUT_DIR)
       .filter(file => file.endsWith('.png'))
-      .sort();
+      .sort((a, b) => {
+        const numA = parseInt(a.match(/\d+/)?.[0] || '0');
+        const numB = parseInt(b.match(/\d+/)?.[0] || '0');
+        return numA - numB;
+      });
 
     console.log(`\n✅ Successfully extracted ${generatedFiles.length} pages`);
     console.log('\nGenerated files:');
-    generatedFiles.forEach((file, index) => {
+    generatedFiles.slice(0, 10).forEach((file, index) => {
       console.log(`   ${index + 1}. ${file}`);
     });
+    if (generatedFiles.length > 10) {
+      console.log(`   ... and ${generatedFiles.length - 10} more files`);
+    }
 
     return {
       success: true,
