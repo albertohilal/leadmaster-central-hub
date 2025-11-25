@@ -1,0 +1,36 @@
+{
+  "name": "catalogo-habysupply",
+  "version": "1.0.0",
+  "description": "Automatic PDF catalog processing system with image extraction and OpenAI Vision analysis",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "extract:pages": "node scripts/extract_pages.js",
+    "detect:blocks": "node scripts/detect_blocks.js",
+    "parse:text": "node scripts/parse_text.js",
+    "extract:images": "node scripts/extract_images.js",
+    "match:sku": "node scripts/match_images_to_sku.js",
+    "to:mysql": "node scripts/to_mysql.js",
+    "process:all": "npm run extract:pages && npm run detect:blocks && npm run parse:text && npm run extract:images && npm run match:sku"
+  },
+  "keywords": [
+    "pdf",
+    "catalog",
+    "image-extraction",
+    "openai",
+    "vision",
+    "mysql"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "pdf-poppler": "^0.2.1",
+    "pdf-parse": "^1.1.1",
+    "sharp": "^0.33.5",
+    "jimp": "^0.22.12",
+    "tesseract.js": "^5.1.1",
+    "mysql2": "^3.11.3",
+    "openai": "^4.67.3",
+    "dotenv": "^16.4.5"
+  }
+}
