@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const enviosController = require('../controllers/enviosController');
 
+
 router.get('/status', enviosController.status);
-// Aquí se agregarán las rutas reales de envíos
+// Listar envíos
+router.get('/', enviosController.list);
 
 module.exports = router;

@@ -20,19 +20,82 @@ leadmaster-central-hub/
 │   │   │   └── ...
 │   │   ├── sender/              # Envíos masivos (campañas, mensajes)
 
-## 🚦 Endpoints principales propuestos
+
+## 🚦 Endpoints principales implementados
+
 
 ### Campañas
 - `GET /sender/campaigns` — Listar campañas
+  - **Response:**
+    ```json
+    [
+      { "id": 1, "nombre": "Campaña Demo", "estado": "activa" }
+    ]
+    ```
 - `POST /sender/campaigns` — Crear campaña
+  - **Request:**
+    ```json
+    { "nombre": "Campaña Test", "descripcion": "Campaña de prueba" }
+    ```
+  - **Response:**
+    ```json
+    { "id": 1017, "nombre": "Campaña Test", "descripcion": "Campaña de prueba", "estado": "activa", "creada": "2025-12-13T15:08:13.000Z" }
+    ```
 - `GET /sender/campaigns/:id` — Detalle de campaña
+  - **Response:**
+    ```json
+    { "id": 1, "nombre": "Campaña Demo", "estado": "activa", "descripcion": "Demo", "creada": "2025-12-13T00:00:00.000Z" }
+    ```
 - `PUT /sender/campaigns/:id` — Editar campaña
+  - **Request:**
+    ```json
+    { "nombre": "Campaña Editada" }
+    ```
+  - **Response:**
+    ```json
+    { "id": 1, "nombre": "Campaña Editada", "descripcion": "Demo", "estado": "activa", "actualizada": "2025-12-13T15:29:06.146Z" }
+    ```
 - `DELETE /sender/campaigns/:id` — Eliminar campaña
+  - **Response:**
+    ```json
+    { "success": true, "id": 1 }
+    ```
 
-### Envíos/Mensajes
+
+### Envíos y Mensajes
+- `GET /sender/envios` — Listar envíos
+  - **Response:**
+    ```json
+    [
+      { "id": 1, "campaña": "Campaña Demo", "destinatario": "+5491112345678", "estado": "enviado", "fecha": "2025-12-13" },
+      { "id": 2, "campaña": "Campaña Navidad", "destinatario": "+5491198765432", "estado": "pendiente", "fecha": "2025-12-13" }
+    ]
+    ```
 - `POST /sender/messages/send` — Enviar mensaje individual
+  - **Request:**
+    ```json
+    { "destinatario": "+5491112345678", "mensaje": "Hola!" }
+    ```
+  - **Response:**
+    ```json
+    { "id": 446, "destinatario": "+5491112345678", "mensaje": "Hola!", "estado": "enviado", "fecha": "2025-12-13T15:29:15.017Z" }
+    ```
 - `POST /sender/messages/send-bulk` — Enviar mensajes masivos (campaña)
+  - **Request:**
+    ```json
+    { "campañaId": 1, "mensajes": [ { "destinatario": "+5491112345678", "mensaje": "Hola!" } ] }
+    ```
+  - **Response:**
+    ```json
+    { "campañaId": 1, "enviados": 1, "estado": "procesando" }
+    ```
 - `GET /sender/messages/status/:id` — Estado de envío
+  - **Response:**
+    ```json
+    { "id": "1", "estado": "enviado", "fecha": "2025-12-13T00:00:00.000Z" }
+    ```
+
+---
 
 ## 🔗 Integración
 - Todos los envíos deben usar la sesión activa de WhatsApp (validar antes de enviar).

@@ -12,8 +12,11 @@ router.get('/status', (req, res) => {
   res.json({ status: 'sender module ok' });
 });
 
+
 // Nueva ruta modular para campañas
 router.use('/campaigns', require('./campaigns'));
+// Nueva ruta modular para mensajes
+router.use('/messages', require('./messages'));
 
 // Rutas legacy
 router.use('/auth', require('./auth'));
