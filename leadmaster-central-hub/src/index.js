@@ -24,9 +24,17 @@ app.use('/sender', senderRoutes);
 const sessionManagerRoutes = require('./modules/session-manager/routes');
 app.use('/session-manager', sessionManagerRoutes);
 
-// TODO: Integrar módulos y rutas
+
+// Importar rutas del módulo listener
+const listenerRoutes = require('./modules/listener/routes/listenerRoutes');
+app.use('/listener', listenerRoutes);
 
 const PORT = process.env.PORT || 3010;
 app.listen(PORT, () => {
   console.log(`Leadmaster Central Hub corriendo en http://localhost:${PORT}`);
+  
+  // Inicializar cliente WhatsApp automáticamente al arrancar
+  const sessionService = require('./modules/session-manager/services/sessionService');
+  console.log('🟢 Inicializando sesión de WhatsApp...');
+  sessionService.getOrCreateClient();
 });

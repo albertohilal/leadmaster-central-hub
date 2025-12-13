@@ -1,4 +1,7 @@
 // Controlador para gestión de sesiones WhatsApp
+const sessionService = require('../services/sessionService');
+const QRCode = require('qrcode');
+
 exports.status = (req, res) => {
   res.json({ status: 'session-manager ok' });
 };
@@ -13,66 +16,21 @@ exports.logout = (req, res) => {
   res.json({ message: 'logout iniciado (placeholder)' });
 };
 
-
-// --- Lógica real de QR WhatsApp ---
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const QRCode = require('qrcode');
-let wappClient = null;
-let lastQR = null;
-let clientReady = false;
-
-// Inicializar cliente WhatsApp si no existe
-function getOrCreateClient() {
-  if (!wappClient) {
-    wappClient = new Client({
-      authStrategy: new LocalAuth(),
-      puppeteer: {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      }
-    });
-    wappClient.on('qr', qr => {
-      lastQR = qr;
-      clientReady = false;
-      console.log('🔑 [session-manager] QR recibido. Escanéalo con WhatsApp.');
-      console.log(qr);
-    });
-    wappClient.on('ready', () => {
-      clientReady = true;
-      console.log('✅ [session-manager] Cliente WhatsApp listo (ready)');
-    });
-    wappClient.on('authenticated', () => {
-      clientReady = false;
-      console.log('🔐 [session-manager] Cliente autenticado');
-    });
-    wappClient.on('disconnected', () => {
-      clientReady = false;
-      lastQR = null;
-      wappClient = null;
-      console.log('⚠️ [session-manager] Cliente WhatsApp desconectado');
-    });
-    console.log('🟢 [session-manager] Inicializando cliente WhatsApp...');
-    wappClient.initialize();
-  }
-  return wappClient;
-}
-
 exports.state = (req, res) => {
-  getOrCreateClient();
-  res.json({
-    state: clientReady ? 'conectado' : (lastQR ? 'qr' : 'desconectado'),
-    hasQR: !!lastQR
-  });
+  const state = sessionService.getSessionState();
+  res.json(state);
 };
 
 // Endpoint para obtener el QR como imagen PNG (base64)
 exports.qr = async (req, res) => {
-  getOrCreateClient();
-  if (!lastQR) {
-    return res.status(404).json({ error: 'QR no disponible. Espera a que se genere.' });
+  const qr = sessionService.getQR();
+  if (!qr) {
+    return res.status(404).json({ 
+      error: 'QR no disponible. Espera a que se genere o verifica el estado en /session-manager/state' 
+    });
   }
   try {
-    const qrDataURL = await QRCode.toDataURL(lastQR, {
+    const qrDataURL = await QRCode.toDataURL(qr, {
       width: 300,
       margin: 2,
       color: { dark: '#000000', light: '#FFFFFF' }

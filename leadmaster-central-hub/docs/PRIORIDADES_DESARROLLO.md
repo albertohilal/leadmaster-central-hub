@@ -7,12 +7,17 @@
 1. **Gestión de sesiones/conexiones WhatsApp** ✅ _completado_
    - Multi-sesión, login/logout, estado, reconexión.
    - Endpoints: iniciar sesión, cerrar sesión, estado de sesión, logs.
-2. **Envíos masivos (campañas, mensajes)**
+   - Implementado con venom-bot centralizado en session-manager.
+2. **Envíos masivos (campañas, mensajes)** ✅ _completado_
    - Creación y gestión de campañas, envíos, reportes.
    - Integración con la sesión activa del cliente.
-3. **Listener y respuestas automáticas (IA, reglas)**
+   - Módulo sender integrado con session-manager.
+3. **Listener y respuestas automáticas (IA, reglas)** ✅ _completado_
    - Escucha de mensajes entrantes y respuestas automáticas.
    - Integración con IA y reglas personalizadas.
+   - Control de IA por lead persistente en MySQL.
+   - Integración con OpenAI para respuestas inteligentes.
+   - Módulo listener integrado con session-manager.
 4. **Gestión de leads/clientes**
    - Consulta, edición y administración de leads/clientes existentes.
    - Integración con Dolibarr y otras fuentes (sin scraping nuevo por ahora).
