@@ -20,10 +20,19 @@
    - Módulo listener integrado con session-manager.
    - **Suite de tests automatizados con Playwright (29 tests de API REST)**
    - **100% de cobertura de tests (29/29 tests passing)** ✅
-4. **Gestión de leads/clientes**
+4. **Frontend Web (Dashboard)** 🎨 _en desarrollo_
+   - Interfaz web completa con React + Vite + Tailwind CSS
+   - Dashboard principal con estado del sistema
+   - Gestión visual de sesión WhatsApp (QR, estado, logs)
+   - Panel de campañas y envíos masivos
+   - Gestión de leads/clientes con búsqueda y filtros
+   - Control del listener y respuestas automáticas
+   - Configuración del sistema
+   - Ver detalle en: `PRIORIDADES_DESARROLLO_FRONT.md`
+5. **Gestión de leads/clientes (Backend)**
    - Consulta, edición y administración de leads/clientes existentes.
    - Integración con Dolibarr y otras fuentes (sin scraping nuevo por ahora).
-5. **Scraping y enriquecimiento de leads**
+6. **Scraping y enriquecimiento de leads**
    - Scraping de Google Places y otras fuentes para alimentar leads/clientes.
    - Similar a la lógica de desarrolloydisenio-api.
 
