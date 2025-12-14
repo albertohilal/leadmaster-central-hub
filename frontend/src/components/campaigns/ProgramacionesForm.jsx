@@ -25,6 +25,7 @@ export default function ProgramacionesForm() {
   });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     senderAPI.getCampaigns()
@@ -46,6 +47,20 @@ export default function ProgramacionesForm() {
     e.preventDefault();
     setSaving(true);
     setMessage('');
+    setErrors({});
+    // Validaciones básicas
+    const errs = {};
+    if (!form.campania_id) errs.campania_id = 'Selecciona una campaña';
+    if (!form.fecha_inicio) errs.fecha_inicio = 'Selecciona fecha de inicio';
+    if (!form.dias_semana.length) errs.dias_semana = 'Selecciona al menos un día';
+    if (!form.hora_inicio) errs.hora_inicio = 'Ingresa hora de inicio';
+    if (!form.hora_fin) errs.hora_fin = 'Ingresa hora de fin';
+    if (Number(form.cupo_diario) <= 0) errs.cupo_diario = 'El cupo debe ser mayor a 0';
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      setSaving(false);
+      return;
+    }
     try {
       const payload = {
         ...form,
@@ -91,6 +106,7 @@ export default function ProgramacionesForm() {
               <option key={c.id} value={c.id}>{c.nombre}</option>
             ))}
           </select>
+          {errors.campania_id && <p className="text-red-600 text-xs mt-1">{errors.campania_id}</p>}
         </div>
 
         <div>
@@ -107,6 +123,7 @@ export default function ProgramacionesForm() {
               </label>
             ))}
           </div>
+          {errors.dias_semana && <p className="text-red-600 text-xs mt-1">{errors.dias_semana}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -119,6 +136,7 @@ export default function ProgramacionesForm() {
               value={form.hora_inicio}
               onChange={(e) => setForm((f) => ({ ...f, hora_inicio: e.target.value + (e.target.value.length === 5 ? ':00' : '') }))}
             />
+            {errors.hora_inicio && <p className="text-red-600 text-xs mt-1">{errors.hora_inicio}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Hora fin</label>
@@ -129,6 +147,7 @@ export default function ProgramacionesForm() {
               value={form.hora_fin}
               onChange={(e) => setForm((f) => ({ ...f, hora_fin: e.target.value + (e.target.value.length === 5 ? ':00' : '') }))}
             />
+            {errors.hora_fin && <p className="text-red-600 text-xs mt-1">{errors.hora_fin}</p>}
           </div>
         </div>
 
@@ -142,6 +161,7 @@ export default function ProgramacionesForm() {
               value={form.cupo_diario}
               onChange={(e) => setForm((f) => ({ ...f, cupo_diario: e.target.value }))}
             />
+            {errors.cupo_diario && <p className="text-red-600 text-xs mt-1">{errors.cupo_diario}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Fecha inicio</label>
@@ -151,6 +171,7 @@ export default function ProgramacionesForm() {
               value={form.fecha_inicio}
               onChange={(e) => setForm((f) => ({ ...f, fecha_inicio: e.target.value }))}
             />
+            {errors.fecha_inicio && <p className="text-red-600 text-xs mt-1">{errors.fecha_inicio}</p>}
           </div>
         </div>
 
