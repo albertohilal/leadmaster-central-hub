@@ -33,8 +33,17 @@ const PORT = process.env.PORT || 3010;
 app.listen(PORT, () => {
   console.log(`Leadmaster Central Hub corriendo en http://localhost:${PORT}`);
   
-  // Inicializar cliente WhatsApp automáticamente al arrancar
-  const sessionService = require('./modules/session-manager/services/sessionService');
-  console.log('🟢 Inicializando sesión de WhatsApp...');
-  sessionService.getOrCreateClient();
+  // Inicializar cliente WhatsApp de forma asíncrona (no bloqueante)
+  if (process.env.NODE_ENV !== 'test') {
+    const sessionService = require('./modules/session-manager/services/sessionService');
+    console.log('🟢 Inicializando sesión de WhatsApp...');
+    // Iniciar en background sin bloquear el servidor
+    setImmediate(() => {
+      try {
+        sessionService.getOrCreateClient();
+      } catch (err) {
+        console.error('❌ Error inicializando WhatsApp:', err.message);
+      }
+    });
+  }
 });

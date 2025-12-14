@@ -12,7 +12,7 @@ const config = {
   },
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'test-results/html-report' }],
+    ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }]
   ],
   projects: [

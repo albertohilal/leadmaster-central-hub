@@ -66,6 +66,10 @@ test.describe('Listener API', () => {
     expect(response.status()).toBe(200);
     
     const data = await response.json();
+    // Si falla, mostrar el error para debugging
+    if (!data.success) {
+      console.log('Error en ia/enable:', data.error);
+    }
     expect(data.success).toBe(true);
     expect(data.telefono).toBe(testPhone);
     expect(data.ia_enabled).toBe(true);
@@ -82,6 +86,10 @@ test.describe('Listener API', () => {
     expect(response.status()).toBe(200);
     
     const data = await response.json();
+    // Si falla, mostrar el error para debugging
+    if (!data.success) {
+      console.log('Error en ia/disable:', data.error);
+    }
     expect(data.success).toBe(true);
     expect(data.telefono).toBe(testPhone);
     expect(data.ia_enabled).toBe(false);

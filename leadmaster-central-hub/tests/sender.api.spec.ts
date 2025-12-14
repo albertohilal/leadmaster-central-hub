@@ -86,21 +86,27 @@ test.describe('Sender API', () => {
       data: { mensajes: [] },
       failOnStatusCode: false
     });
+    const data1 = await response1.json();
     expect([400, 503]).toContain(response1.status());
+    expect(data1).toHaveProperty('error');
     
     // Sin mensajes array
     const response2 = await request.post(`${BASE_URL}/sender/messages/bulk`, {
       data: { campañaId: 1 },
       failOnStatusCode: false
     });
+    const data2 = await response2.json();
     expect([400, 503]).toContain(response2.status());
+    expect(data2).toHaveProperty('error');
     
     // Mensajes no es array
     const response3 = await request.post(`${BASE_URL}/sender/messages/bulk`, {
       data: { campañaId: 1, mensajes: 'invalid' },
       failOnStatusCode: false
     });
+    const data3 = await response3.json();
     expect([400, 503]).toContain(response3.status());
+    expect(data3).toHaveProperty('error');
   });
 
   test('POST /sender/messages/bulk - diferentes formatos de mensaje', async ({ request }) => {
