@@ -8,6 +8,11 @@ yarn-error.log
 logs/
 *.log
 
+# Test results
+test-results/
+playwright-report/
+playwright/.cache/
+
 # dotenv
 .env
 .env.*
@@ -26,6 +31,9 @@ Thumbs.db
 # WhatsApp session data
 .session/
 .wwebjs_auth/
+
+# Venom-bot tokens (session data)
+tokens/
 
 # Test
 coverage/
