@@ -54,3 +54,12 @@ coverage/
 
 # Ignore tokens and secrets
 tokens/
+
+# Proyectos externos (no deben estar en este repo)
+bares-don/
+catalogo-habysupply/
+crud-bares/
+desarrolloydisenio.com.ar/
+menu-bares/
+wappflow-n8n/
+*.zip
