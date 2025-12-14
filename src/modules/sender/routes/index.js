@@ -1,6 +1,10 @@
 // Rutas principales migradas desde whatsapp-massive-sender-V2
 const express = require('express');
 const router = express.Router();
+const { authenticate } = require('../../auth/middleware/authMiddleware');
+
+// Todas las rutas de sender requieren autenticación
+router.use(authenticate);
 
 // Ejemplo de importación de controlador
 // const campaniasController = require('../controllers/campaniasController');

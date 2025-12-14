@@ -1,90 +1,189 @@
-// Servicio central de gestión de sesiones WhatsApp con venom-bot
+// Servicio central de gestión de sesiones WhatsApp multi-tenant con venom-bot
 const venom = require('venom-bot');
+const path = require('path');
+const fs = require('fs');
 
-let wappClient = null;
-let lastQR = null;
-let clientReady = false;
+// Almacenar múltiples clientes (clienteId => { client, qr, ready, connecting })
+const clientSessions = new Map();
 
-// Inicializar cliente WhatsApp si no existe
-function getOrCreateClient() {
-  if (!wappClient) {
-    console.log('🟢 [session-manager] Inicializando cliente WhatsApp con venom-bot...');
+/**
+ * Cargar sesiones existentes del disco al iniciar
+ */
+function loadExistingSessions() {
+  const tokensPath = path.join(__dirname, '../../../tokens');
+  
+  try {
+    if (!fs.existsSync(tokensPath)) {
+      console.log('📁 [session-manager] No hay sesiones previas');
+      return;
+    }
+
+    const folders = fs.readdirSync(tokensPath);
+    const clientFolders = folders.filter(f => f.startsWith('client_'));
+    
+    if (clientFolders.length === 0) {
+      console.log('📁 [session-manager] No hay sesiones de clientes guardadas');
+      return;
+    }
+
+    console.log(`📁 [session-manager] Encontradas ${clientFolders.length} sesiones guardadas`);
+    
+    clientFolders.forEach(folder => {
+      const match = folder.match(/client_(\d+)/);
+      if (match) {
+        const clienteId = parseInt(match[1]);
+        console.log(`🔄 [session-manager] Reconectando cliente ${clienteId}...`);
+        
+        // Inicializar sesión sin esperar (async)
+        setTimeout(() => {
+          getOrCreateClient(clienteId, folder);
+        }, 2000); // Esperar 2 segundos entre cada reconexión
+      }
+    });
+  } catch (error) {
+    console.error('❌ [session-manager] Error cargando sesiones:', error.message);
+  }
+}
+
+/**
+ * Obtener o crear cliente para un cliente específico
+ * @param {number} clienteId - ID del cliente
+ * @param {string} sessionName - Nombre de la sesión (opcional)
+ */
+function getOrCreateClient(clienteId, sessionName = null) {
+  const session = clientSessions.get(clienteId);
+  
+  // Si ya existe y está listo o conectando, retornar
+  if (session && (session.ready || session.connecting)) {
+    return session.client;
+  }
+
+  // Si no existe, crear nueva sesión
+  if (!session || !session.connecting) {
+    const name = sessionName || `client_${clienteId}`;
+    console.log(`🟢 [session-manager] Inicializando WhatsApp para cliente ${clienteId} (${name})...`);
+    
+    // Inicializar estado
+    clientSessions.set(clienteId, {
+      client: null,
+      qr: null,
+      ready: false,
+      connecting: true,
+      sessionName: name
+    });
     
     venom
       .create({
-        session: 'leadmaster-central-hub',
+        session: name,
         headless: false,
         useChrome: true,
         executablePath: '/usr/bin/google-chrome-stable',
         disableSpins: true,
+        folderNameToken: path.join(__dirname, '../../../tokens'),
         browserArgs: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
           '--disable-gpu'
         ],
         puppeteerOptions: {
           args: ['--no-sandbox', '--disable-setuid-sandbox'],
-          headless: true
+          headless: false
         },
         catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
-          lastQR = base64Qr;
-          clientReady = false;
-          console.log('🔑 [session-manager] QR recibido. Escanéalo con WhatsApp.');
-          console.log('📱 [session-manager] Accede a /session-manager/qr para obtener el QR como imagen');
-          console.log(`Intento ${attempts}/5`);
+          const sess = clientSessions.get(clienteId);
+          if (sess) {
+            sess.qr = base64Qr;
+            sess.ready = false;
+            console.log(`🔑 [session-manager] QR recibido para cliente ${clienteId}. Intento ${attempts}/5`);
+            console.log(`📱 [session-manager] QR disponible en: GET /session-manager/qr`);
+            console.log(`🔗 [session-manager] URL Code: ${urlCode}`);
+          } else {
+            console.error(`❌ [session-manager] Sesión no encontrada para cliente ${clienteId}`);
+          }
         },
         statusFind: (statusSession, sessionName) => {
-          console.log(`🔍 [session-manager] Estado: ${statusSession}`);
+          console.log(`🔍 [session-manager] Cliente ${clienteId}: ${statusSession}`);
         }
       })
       .then((client) => {
-        wappClient = client;
-        clientReady = true;
-        lastQR = null;
-        console.log('✅ [session-manager] Cliente WhatsApp listo (ready)');
+        const sess = clientSessions.get(clienteId);
+        if (sess) {
+          sess.client = client;
+          sess.ready = true;
+          sess.qr = null;
+          sess.connecting = false;
+          console.log(`✅ [session-manager] Cliente ${clienteId} WhatsApp listo`);
+        }
       })
       .catch((error) => {
-        console.error('❌ [session-manager] Error al iniciar cliente:', error.message);
-        clientReady = false;
-        wappClient = null;
+        console.error(`❌ [session-manager] Error cliente ${clienteId}:`, error.message);
+        const sess = clientSessions.get(clienteId);
+        if (sess) {
+          sess.ready = false;
+          sess.client = null;
+          sess.connecting = false;
+        }
       });
   }
-  return wappClient;
+  
+  return clientSessions.get(clienteId)?.client;
 }
 
-// Obtener el cliente (sin inicializar si no existe)
-function getClient() {
-  return wappClient;
+/**
+ * Obtener cliente ya existente (sin inicializar)
+ */
+function getClient(clienteId) {
+  return clientSessions.get(clienteId)?.client;
 }
 
-// Obtener estado de la sesión
-function getSessionState() {
-  getOrCreateClient(); // Asegura que el cliente esté inicializándose
+/**
+ * Obtener estado de la sesión de un cliente
+ */
+function getSessionState(clienteId) {
+  const session = clientSessions.get(clienteId);
+  
+  if (!session) {
+    return {
+      state: 'desconectado',
+      hasQR: false,
+      ready: false,
+      connecting: false
+    };
+  }
+  
   return {
-    state: clientReady ? 'conectado' : (lastQR ? 'qr' : 'desconectado'),
-    hasQR: !!lastQR,
-    ready: clientReady
+    state: session.ready ? 'conectado' : (session.connecting ? 'conectando' : (session.qr ? 'qr' : 'desconectado')),
+    hasQR: !!session.qr,
+    ready: session.ready,
+    connecting: session.connecting
   };
 }
 
-// Obtener el QR actual
-function getQR() {
-  return lastQR;
+/**
+ * Obtener QR de un cliente
+ */
+function getQR(clienteId) {
+  return clientSessions.get(clienteId)?.qr;
 }
 
-// Verificar si el cliente está listo
-function isReady() {
-  return clientReady;
+/**
+ * Verificar si el cliente está listo
+ */
+function isReady(clienteId) {
+  return clientSessions.get(clienteId)?.ready || false;
 }
 
-// Enviar mensaje (requiere cliente listo)
-async function sendMessage(phoneNumber, message) {
-  if (!clientReady || !wappClient) {
-    throw new Error('Cliente WhatsApp no está listo. Estado: ' + getSessionState().state);
+/**
+ * Enviar mensaje para un cliente específico
+ */
+async function sendMessage(clienteId, phoneNumber, message) {
+  const session = clientSessions.get(clienteId);
+  
+  if (!session || !session.ready || !session.client) {
+    throw new Error(`Cliente ${clienteId} WhatsApp no está listo. Estado: ${getSessionState(clienteId).state}`);
   }
 
   try {
@@ -92,13 +191,49 @@ async function sendMessage(phoneNumber, message) {
       ? phoneNumber 
       : `${phoneNumber}@c.us`;
     
-    await wappClient.sendText(formattedNumber, message);
-    console.log(`✅ [session-manager] Mensaje enviado a ${phoneNumber}`);
+    await session.client.sendText(formattedNumber, message);
+    console.log(`✅ [session-manager] Mensaje enviado a ${phoneNumber} desde cliente ${clienteId}`);
     return { success: true };
   } catch (error) {
-    console.error(`❌ [session-manager] Error enviando mensaje a ${phoneNumber}:`, error.message);
+    console.error(`❌ [session-manager] Error enviando mensaje cliente ${clienteId}:`, error.message);
     throw error;
   }
+}
+
+/**
+ * Desconectar sesión de un cliente
+ */
+async function disconnect(clienteId) {
+  const session = clientSessions.get(clienteId);
+  
+  try {
+    if (session && session.client) {
+      await session.client.close();
+      console.log(`🔴 [session-manager] Cliente ${clienteId} desconectado`);
+    }
+    clientSessions.delete(clienteId);
+    return { success: true, message: 'Desconectado correctamente' };
+  } catch (error) {
+    console.error(`❌ [session-manager] Error al desconectar cliente ${clienteId}:`, error.message);
+    // Forzar eliminación aunque falle
+    clientSessions.delete(clienteId);
+    throw error;
+  }
+}
+
+/**
+ * Obtener todas las sesiones activas
+ */
+function getAllSessions() {
+  const sessions = [];
+  clientSessions.forEach((session, clienteId) => {
+    sessions.push({
+      clienteId,
+      sessionName: session.sessionName,
+      state: getSessionState(clienteId)
+    });
+  });
+  return sessions;
 }
 
 module.exports = {
@@ -107,5 +242,8 @@ module.exports = {
   getSessionState,
   getQR,
   isReady,
-  sendMessage
+  sendMessage,
+  disconnect,
+  getAllSessions,
+  loadExistingSessions
 };

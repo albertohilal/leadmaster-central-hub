@@ -20,7 +20,7 @@
    - Módulo listener integrado con session-manager.
    - **Suite de tests automatizados con Playwright (29 tests de API REST)**
    - **100% de cobertura de tests (29/29 tests passing)** ✅
-4. **Frontend Web (Dashboard)** 🎨 _en desarrollo_
+4. **Frontend Web (Dashboard)** 🎨 ✅ _completado_
    - Interfaz web completa con React + Vite + Tailwind CSS
    - Dashboard principal con estado del sistema
    - Gestión visual de sesión WhatsApp (QR, estado, logs)
@@ -28,7 +28,17 @@
    - Gestión de leads/clientes con búsqueda y filtros
    - Control del listener y respuestas automáticas
    - Configuración del sistema
-   - Ver detalle en: `PRIORIDADES_DESARROLLO_FRONT.md`
+   - **Sistema de autenticación completo con JWT** ✅
+   - **Login con tabla ll_usuarios (bcrypt + JWT)** ✅
+   - **Protección de todas las rutas con middleware** ✅
+   - **Branding DyD con logos integrados** ✅
+   - **Sistema multi-tenant por cliente_id** ✅
+   - **Ubicación:** `/frontend/`
+   - **Documentación:** 
+     - `/docs/frontend/ARQUITECTURA_FRONTEND.md` (guía completa React/Vite/Tailwind)
+     - `/docs/frontend/GUIA_RAPIDA.md` (inicio rápido)
+     - `/docs/frontend/PRIORIDADES_FRONTEND.md` (fases de desarrollo)
+     - `/docs/AUTENTICACION.md` (sistema de auth completo)
 5. **Gestión de leads/clientes (Backend)**
    - Consulta, edición y administración de leads/clientes existentes.
    - Integración con Dolibarr y otras fuentes (sin scraping nuevo por ahora).
