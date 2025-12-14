@@ -1,9 +1,8 @@
 # Prioridades de desarrollo - Frontend Web Dashboard
 
-> **Stack tecnológico:** React + Vite + Tailwind CSS + Axios  
-> **API Backend:** http://localhost:3010 (leadmaster-central-hub)  
-> **Estado:** ✅ COMPLETADO (14 de diciembre de 2025)  
-> **Documentación:** Este archivo ahora está en `/docs/frontend/` (estructura unificada). Contenido consolidado desde `docs/PRIORIDADES_DESARROLLO_FRONT.md`.
+> **Stack tecnológico:** React + Vite + Tailwind CSS + Axios
+> **API Backend:** http://localhost:3010 (leadmaster-central-hub)
+> **Estado:** ✅ COMPLETADO (14 de diciembre de 2025)
 
 ## 🎯 Objetivo
 
@@ -13,17 +12,13 @@
 
 - ✅ **Frontend completo** en `/frontend/`
 - ✅ **15+ componentes React** implementados
-- ✅ **6 rutas** configuradas (+ ruta login)
+- ✅ **6 rutas** configuradas
 - ✅ **20+ endpoints** integrados
-- ✅ **Sistema de autenticación completo** con JWT
-- ✅ **Branding DyD** con logos integrados
 - ✅ **Documentación completa:**
-  - `/docs/frontend/ARQUITECTURA_FRONTEND.md` (400+ líneas)
-  - `/docs/frontend/GUIA_RAPIDA.md`
-  - `/docs/AUTENTICACION.md`
-  - `/docs/INSTALACION_AUTH.md`
+  - `/frontend/docs/ARQUITECTURA_FRONTEND.md` (400+ líneas)
+  - `/frontend/docs/GUIA_RAPIDA.md`
   - `/frontend/README.md`
-  - `/frontend/PROYECTO_COMPLETADO.md` (si existe en el directorio)
+  - `/frontend/PROYECTO_COMPLETADO.md`
 
 ---
 
