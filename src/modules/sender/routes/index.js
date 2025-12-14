@@ -26,6 +26,8 @@ router.use('/messages', require('./messages'));
 router.use('/auth', require('./auth'));
 router.use('/campanias', require('./campanias'));
 router.use('/envios', require('./envios'));
+// Programaciones de campañas (días, horarios, cupo)
+router.use('/programaciones', require('./programaciones'));
 router.use('/usuarios', require('./usuarios'));
 router.use('/sesiones', require('./sesiones'));
 router.use('/lugares', require('./lugares'));

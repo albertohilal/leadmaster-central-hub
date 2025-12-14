@@ -48,9 +48,12 @@ app.listen(PORT, () => {
   // Cargar sesiones existentes (reconectar automáticamente)
   if (process.env.NODE_ENV !== 'test') {
     const sessionService = require('./modules/session-manager/services/sessionService');
+    const { start: startProgramacionScheduler } = require('./modules/sender/services/programacionScheduler');
     setTimeout(() => {
       console.log('🔄 [session-manager] Buscando sesiones guardadas...');
       sessionService.loadExistingSessions();
+      console.log('⏱️ [sender] Iniciando scheduler de programaciones...');
+      startProgramacionScheduler();
     }, 3000); // Esperar 3 segundos después de iniciar el servidor
   }
 });
