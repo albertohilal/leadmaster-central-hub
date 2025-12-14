@@ -4,6 +4,8 @@ import Button from '../common/Button';
 import LoadingSpinner from '../common/LoadingSpinner';
 import Modal from '../common/Modal';
 import { senderAPI, leadsAPI } from '../../services/api';
+import ProgramacionesForm from './ProgramacionesForm';
+import ProgramacionesList from './ProgramacionesList';
 
 const CampaignsManager = () => {
   const [loading, setLoading] = useState(true);
@@ -149,6 +151,17 @@ const CampaignsManager = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <div className="text-center py-4">
+        {/* Programaciones (franjas por días/horarios/cupo) */}
+        <Card title="Programación de Campañas" icon="⏱️">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <ProgramacionesForm />
+            </div>
+            <div>
+              <ProgramacionesList />
+            </div>
+          </div>
+        </Card>
             <p className="text-sm text-gray-600">Total Campañas</p>
             <p className="text-4xl font-bold text-gray-800 mt-2">{campaigns.length}</p>
           </div>

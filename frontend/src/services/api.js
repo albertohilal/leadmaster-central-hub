@@ -64,6 +64,9 @@ export const senderAPI = {
   sendMessage: (data) => api.post('/sender/messages/send', data),
   sendBulk: (data) => api.post('/sender/messages/bulk', data),
   getMessageStatus: (id) => api.get(`/sender/messages/status/${id}`),
+  // Programaciones
+  listProgramaciones: (params) => api.get('/sender/programaciones', { params }),
+  createProgramacion: (data) => api.post('/sender/programaciones', data),
   getCampaigns: () => api.get('/sender/campaigns'),
   createCampaign: (data) => api.post('/sender/campaigns', data),
   getCampaignStats: (id) => api.get(`/sender/campaigns/${id}/stats`),
