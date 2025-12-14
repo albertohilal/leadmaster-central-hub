@@ -18,6 +18,8 @@
    - Control de IA por lead persistente en MySQL.
    - Integración con OpenAI para respuestas inteligentes.
    - Módulo listener integrado con session-manager.
+   - **Suite de tests automatizados con Playwright (29 tests de API REST)**
+   - **96% de cobertura de tests (28/29 tests passing)**
 4. **Gestión de leads/clientes**
    - Consulta, edición y administración de leads/clientes existentes.
    - Integración con Dolibarr y otras fuentes (sin scraping nuevo por ahora).
