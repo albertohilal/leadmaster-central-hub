@@ -46,6 +46,10 @@ export const sessionAPI = {
   connect: () => api.post('/session-manager/login'),
   disconnect: () => api.post('/session-manager/logout'),
   getLogs: () => api.get('/session-manager/logs'),
+  // Admin endpoints
+  listSessions: async () => (await api.get('/session-manager/sessions')).data,
+  adminLogin: async (clienteId) => (await api.post('/session-manager/admin/login', { cliente_id: clienteId })).data,
+  adminLogout: async (clienteId) => (await api.post('/session-manager/admin/logout', { cliente_id: clienteId })).data,
 };
 
 // ===== LISTENER API =====

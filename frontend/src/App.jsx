@@ -9,6 +9,7 @@ import Dashboard from './components/dashboard/Dashboard';
 import SessionManager from './components/whatsapp/SessionManager';
 import LeadsManager from './components/leads/LeadsManager';
 import ListenerControl from './components/listener/ListenerControl';
+import AdminSessions from './components/admin/AdminSessions';
 import CampaignsManager from './components/campaigns/CampaignsManager';
 import ConfigPanel from './components/config/ConfigPanel';
 
@@ -85,6 +86,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <ListenerControl />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/sessions"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AdminSessions />
                 </Layout>
               </ProtectedRoute>
             }
