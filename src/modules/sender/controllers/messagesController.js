@@ -44,6 +44,7 @@ exports.sendBulk = async (req, res) => {
     const sessionState = whatsappService.getSessionState();
     if (!sessionState.ready) {
       return res.status(503).json({ 
+        campañaId,
         error: 'Sesión de WhatsApp no lista', 
         estado: sessionState.state 
       });
