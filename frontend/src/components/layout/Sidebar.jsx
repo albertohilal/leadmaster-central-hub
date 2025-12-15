@@ -1,9 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
   
+  const { user } = useAuth();
+
   const menuItems = [
     { 
       path: '/dashboard', 
@@ -39,7 +42,8 @@ const Sidebar = () => {
     {
       path: '/admin/sessions',
       icon: '🛠️',
-      label: 'Sesiones (Admin)'
+      label: 'Sesiones (Admin)',
+      admin: true
     },
   ];
 
@@ -68,7 +72,9 @@ const Sidebar = () => {
       {/* Menu */}
       <nav>
         <ul className="space-y-2">
-          {menuItems.map((item) => (
+          {menuItems
+            .filter(item => !item.admin || (user?.tipo === 'admin'))
+            .map((item) => (
             <li key={item.path}>
               <Link
                 to={item.path}
