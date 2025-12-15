@@ -7,6 +7,7 @@ Documentación completa del sistema LeadMaster Central Hub.
 ### 📋 Planificación y prioridades
 - **[PRIORIDADES_DESARROLLO.md](PRIORIDADES_DESARROLLO.md)** - Plan maestro de desarrollo del proyecto
 - **[frontend/PRIORIDADES_FRONTEND.md](frontend/PRIORIDADES_FRONTEND.md)** - Fases de desarrollo del frontend
+- **[AGENDA_PROXIMA_JORNADA.md](AGENDA_PROXIMA_JORNADA.md)** - Agenda con objetivos y tareas próximas
 
 ### 🏗️ Arquitectura
 - **[ARQUITECTURA_MODULAR.md](ARQUITECTURA_MODULAR.md)** - Arquitectura modular del backend
