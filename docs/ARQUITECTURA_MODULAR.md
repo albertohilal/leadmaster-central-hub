@@ -154,14 +154,15 @@ leadmaster-central-hub/
 
 ## Descripción de módulos clave
 - **session-manager:**
-  - Inicia, cierra, reconecta y monitorea sesiones WhatsApp por cliente.
-  - Endpoints: conectar, desconectar, estado, logs, etc.
+  - Inicia, cierra, reconecta y monitorea sesiones WhatsApp por cliente (multi-tenant, aisladas por `clienteId`).
+  - Provee API y servicio central: `getOrCreateClient(clienteId)`, `getSessionState(clienteId)`, `getQR(clienteId)`, `isReady(clienteId)`, `sendMessage(clienteId, phone, message)`, `disconnect(clienteId)`, `getAllSessions()`.
+  - Endpoints: conectar, desconectar, estado, QR. Se recomienda añadir endpoints administrativos: `GET /session-manager/sessions` (listar todas), `POST /session-manager/admin/login` y `POST /session-manager/admin/logout` para operar por `clienteId` con `requireAdmin`.
 - **sender:**
   - Lógica de envío masivo, campañas, programación, reportes.
-  - Usa la sesión activa del cliente.
+  - Usa la sesión activa del cliente a través de `session-manager` (nunca interactúa directamente con Venom).
 - **listener:**
   - Escucha mensajes entrantes y ejecuta respuestas automáticas (IA, reglas, etc).
-  - Puede consumir eventos de session-manager.
+  - Consume exclusivamente el `session-manager` vía `whatsappService` (`isReady`, `getSessionState`, `sendMessage`). No accede directamente a Venom ni a tokens.
 - **scraper:**
   - Scraping de Google Places y otras fuentes para alimentar leads/clientes.
   - Similar a la lógica de desarrolloydisenio-api.
@@ -204,9 +205,14 @@ src/modules/listener/
 - Las credenciales y configuración (API Key, DB, etc.) se obtienen del archivo `.env` compatible con whatsapp-bot-responder.
 
 ## Integración
-- El listener se integra con el session-manager para recibir eventos de mensajes.
+- El listener se integra con el session-manager para recibir eventos de mensajes y enviar respuestas; está prohibido usar Venom directo en este módulo.
 - Si está en modo "responder", utiliza servicios de IA (OpenAI) o lógica de reglas para generar respuestas.
 - Toda la lógica está desacoplada en controladores y servicios.
+
+### Guardrails arquitectónicos
+- Listener y Sender deben consumir WhatsApp únicamente mediante `session-manager`.
+- Cualquier envío debe validar sesión con `isReady(clienteId)` y obtener estado con `getSessionState(clienteId)`.
+- En pruebas, se pueden mockear las llamadas al `sessionService` para validar que no se usan internals de Venom.
 
 ## Endpoints sugeridos
 - `GET /listener/status` — Estado del listener y modo actual.
