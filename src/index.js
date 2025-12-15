@@ -45,13 +45,17 @@ app.listen(PORT, () => {
   console.log(`Leadmaster Central Hub corriendo en http://localhost:${PORT}`);
   console.log('⚪ WhatsApp en espera. Usa el botón "Conectar WhatsApp" desde el dashboard.');
   
-  // Cargar sesiones existentes (reconectar automáticamente)
+  // Cargar sesiones existentes (opcional) y arrancar scheduler
   if (process.env.NODE_ENV !== 'test') {
     const sessionService = require('./modules/session-manager/services/sessionService');
     const { start: startProgramacionScheduler } = require('./modules/sender/services/programacionScheduler');
     setTimeout(() => {
-      console.log('🔄 [session-manager] Buscando sesiones guardadas...');
-      sessionService.loadExistingSessions();
+      if (String(process.env.SESSION_AUTO_RECONNECT || 'false').toLowerCase() === 'true') {
+        console.log('🔄 [session-manager] Buscando sesiones guardadas...');
+        sessionService.loadExistingSessions();
+      } else {
+        console.log('⏸️ [session-manager] Auto-reconexión desactivada. Los clientes iniciarán sesión desde el botón Conectar WhatsApp.');
+      }
       console.log('⏱️ [sender] Iniciando scheduler de programaciones...');
       startProgramacionScheduler();
     }, 3000); // Esperar 3 segundos después de iniciar el servidor

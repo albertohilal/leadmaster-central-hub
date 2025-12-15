@@ -72,6 +72,10 @@ function getOrCreateClient(clienteId, sessionName = null) {
       sessionName: name
     });
     
+    const userDataDir = path.join(process.env.HOME || '/home/beto', '.leadmaster-chrome-profiles', name);
+    try {
+      fs.mkdirSync(userDataDir, { recursive: true });
+    } catch {}
     venom
       .create({
         session: name,
@@ -86,10 +90,18 @@ function getOrCreateClient(clienteId, sessionName = null) {
           '--disable-dev-shm-usage',
           '--no-first-run',
           '--no-zygote',
-          '--disable-gpu'
+          '--disable-gpu',
+          `--user-data-dir=${userDataDir}`,
+          '--remote-debugging-port=0',
+          '--disable-extensions',
+          '--disable-features=Translate,OptimizationHints'
         ],
         puppeteerOptions: {
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            `--user-data-dir=${userDataDir}`
+          ],
           headless: false
         },
         catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
