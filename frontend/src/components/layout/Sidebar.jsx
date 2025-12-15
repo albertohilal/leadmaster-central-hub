@@ -36,6 +36,11 @@ const Sidebar = () => {
       icon: '⚙️', 
       label: 'Configuración' 
     },
+    {
+      path: '/admin/sessions',
+      icon: '🛠️',
+      label: 'Sesiones (Admin)'
+    },
   ];
 
   const isActive = (item) => {
