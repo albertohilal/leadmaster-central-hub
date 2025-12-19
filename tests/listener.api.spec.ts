@@ -1,11 +1,28 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3010';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3011';
+
+// Helper function to get auth token
+async function getAuthToken(request) {
+  const authResponse = await request.post(`${BASE_URL}/auth/login`, {
+    data: {
+      usuario: 'Haby',
+      password: 'haby1973'
+    }
+  });
+  const authData = await authResponse.json();
+  return authData.token;
+}
 
 test.describe('Listener API', () => {
   
   test('GET /listener/status - obtener estado del listener', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/listener/status`);
+    const token = await getAuthToken(request);
+    const response = await request.get(`${BASE_URL}/listener/status`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     
     expect(response.ok()).toBeTruthy();
     expect(response.status()).toBe(200);
@@ -16,7 +33,11 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/mode - cambiar modo a respond', async ({ request }) => {
+    const token = await getAuthToken(request);
     const response = await request.post(`${BASE_URL}/listener/mode`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { mode: 'respond' }
     });
     
@@ -28,13 +49,21 @@ test.describe('Listener API', () => {
     expect(data.mode).toBe('respond');
     
     // Verificar que el cambio persiste
-    const statusResponse = await request.get(`${BASE_URL}/listener/status`);
+    const statusResponse = await request.get(`${BASE_URL}/listener/status`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     const statusData = await statusResponse.json();
     expect(statusData.mode).toBe('respond');
   });
 
   test('POST /listener/mode - cambiar modo a listen', async ({ request }) => {
+    const token = await getAuthToken(request);
     const response = await request.post(`${BASE_URL}/listener/mode`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { mode: 'listen' }
     });
     
@@ -45,7 +74,11 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/mode - rechazar modo inválido', async ({ request }) => {
+    const token = await getAuthToken(request);
     const response = await request.post(`${BASE_URL}/listener/mode`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { mode: 'invalid_mode' }
     });
     
@@ -56,9 +89,13 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/ia/enable - habilitar IA para un lead', async ({ request }) => {
+    const token = await getAuthToken(request);
     const testPhone = '5491112345678';
     
     const response = await request.post(`${BASE_URL}/listener/ia/enable`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { telefono: testPhone }
     });
     
@@ -76,9 +113,13 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/ia/disable - deshabilitar IA para un lead', async ({ request }) => {
+    const token = await getAuthToken(request);
     const testPhone = '5491112345678';
     
     const response = await request.post(`${BASE_URL}/listener/ia/disable`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { telefono: testPhone }
     });
     
@@ -96,7 +137,11 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/ia/enable - validar teléfono requerido', async ({ request }) => {
+    const token = await getAuthToken(request);
     const response = await request.post(`${BASE_URL}/listener/ia/enable`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: {},
       failOnStatusCode: false
     });
@@ -113,7 +158,11 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/ia/disable - validar teléfono requerido', async ({ request }) => {
+    const token = await getAuthToken(request);
     const response = await request.post(`${BASE_URL}/listener/ia/disable`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: {},
       failOnStatusCode: false
     });
@@ -130,12 +179,19 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/test-message - simular mensaje en modo listen', async ({ request }) => {
+    const token = await getAuthToken(request);
     // Primero configurar modo listen
     await request.post(`${BASE_URL}/listener/mode`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { mode: 'listen' }
     });
     
     const response = await request.post(`${BASE_URL}/listener/test-message`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: {
         cliente_id: 52,
         telefono: '5491112345678',
@@ -154,16 +210,26 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/test-message - simular mensaje en modo respond', async ({ request }) => {
+    const token = await getAuthToken(request);
     // Configurar modo respond y habilitar IA
     await request.post(`${BASE_URL}/listener/mode`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { mode: 'respond' }
     });
     
     await request.post(`${BASE_URL}/listener/ia/enable`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { telefono: '5491112345678' }
     });
     
     const response = await request.post(`${BASE_URL}/listener/test-message`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: {
         cliente_id: 52,
         telefono: '5491112345678',
@@ -184,7 +250,11 @@ test.describe('Listener API', () => {
   });
 
   test('POST /listener/test-message - validar campos requeridos', async ({ request }) => {
+    const token = await getAuthToken(request);
     const response = await request.post(`${BASE_URL}/listener/test-message`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       data: { cliente_id: 52 }
     });
     
@@ -194,7 +264,12 @@ test.describe('Listener API', () => {
   });
 
   test('GET /listener/logs - obtener logs del listener', async ({ request }) => {
-    const response = await request.get(`${BASE_URL}/listener/logs`);
+    const token = await getAuthToken(request);
+    const response = await request.get(`${BASE_URL}/listener/logs`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     
     expect(response.ok()).toBeTruthy();
     const data = await response.json();
