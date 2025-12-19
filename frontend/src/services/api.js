@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3010';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3011';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -76,9 +76,15 @@ export const senderAPI = {
   getCampaignStats: (id) => api.get(`/sender/campaigns/${id}/stats`),
 };
 
-// ===== LEADS API (por implementar en backend) =====
+// ===== LEADS API - MULTI-CLIENT =====
 export const leadsAPI = {
-  getAll: (params) => api.get('/leads', { params }),
+  // Obtener todos los leads del cliente autenticado
+  getAll: (params) => api.get('/sender/lugares', { params }),
+  // Obtener leads filtrados por tipo, origen, búsqueda
+  getFiltered: (filters) => api.get('/sender/lugares/filter', { params: filters }),
+  // Obtener estadísticas de leads por tipo
+  getStats: () => api.get('/sender/lugares/stats'),
+  // Endpoints adicionales mantenidos para compatibilidad
   getById: (id) => api.get(`/leads/${id}`),
   search: (query) => api.get('/leads/search', { params: { q: query } }),
   create: (data) => api.post('/leads', data),
@@ -91,6 +97,15 @@ export const leadsAPI = {
 export const statsAPI = {
   getDashboard: () => api.get('/stats/dashboard'),
   getSystemHealth: () => api.get('/stats/health'),
+};
+
+// ===== AUTH API =====
+export const authAPI = {
+  login: (credentials) => api.post('/auth/login', credentials),
+  register: (data) => api.post('/auth/register', data),
+  logout: () => api.post('/auth/logout'),
+  getProfile: () => api.get('/auth/profile'),
+  updateProfile: (data) => api.put('/auth/profile', data),
 };
 
 export default api;

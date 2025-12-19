@@ -21,6 +21,8 @@ router.get('/status', (req, res) => {
 router.use('/campaigns', require('./campaigns'));
 // Nueva ruta modular para mensajes
 router.use('/messages', require('./messages'));
+// Nueva ruta modular para leads/lugares (multi-cliente)
+router.use('/lugares', require('./lugares'));
 
 // Rutas legacy
 router.use('/auth', require('./auth'));

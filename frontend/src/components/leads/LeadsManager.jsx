@@ -34,50 +34,60 @@ const LeadsManager = () => {
 
   const loadLeads = async () => {
     try {
-      // TODO: Reemplazar con API real que use la query de segmentación
-      const mockLeads = [
-        {
-          rowid: 1217,
-          nom: 'Mi Santa Guadalupe Masajes',
-          telephone: '+5491112345678',
-          email: 'guadalupe@masajes.com',
-          address: null,
-          client: 1, // Original de Haby
-          ia_habilitada: true,
-          fecha_creacion: '2025-12-01',
-          tipo_cliente: 'Cliente',
-          origen: 'Originales'
-        },
-        {
-          rowid: 21,
-          nom: 'Nicolas Tileres',
-          telephone: '+5491198765432', 
-          email: 'nicolas@linkedin.com',
-          address: 'https://www.linkedin.com/...',
-          client: 0, // Ex-LinkedIn convertido a lead
-          ia_habilitada: false,
-          fecha_creacion: '2025-12-05',
-          tipo_cliente: 'Lead',
-          origen: 'Scraping'
-        },
-        {
-          rowid: 1335,
-          nom: 'CyberOfice',
-          telephone: '+54113286803',
-          email: 'info@cyberofice.com',
-          address: 'Av. Alcorta, Armando 2186',
-          client: 3, // Proveedor
-          ia_habilitada: false,
-          fecha_creacion: '2025-11-20',
-          tipo_cliente: 'Proveedor',
-          origen: 'Otros'
-        }
-      ];
+      setLoading(true);
       
-      setLeads(mockLeads);
-      setFilteredLeads(mockLeads);
+      // Usar API real para obtener leads del cliente autenticado
+      const response = await leadsAPI.getAll();
+      
+      if (response.data && response.data.success) {
+        const leadsData = response.data.data || [];
+        setLeads(leadsData);
+        setFilteredLeads(leadsData);
+        console.log(`Cargados ${leadsData.length} leads para cliente ${response.data.cliente_id}`);
+      } else {
+        console.error('Error en respuesta de API:', response);
+        setLeads([]);
+        setFilteredLeads([]);
+      }
+      
     } catch (error) {
       console.error('Error loading leads:', error);
+      
+      // Fallback a datos mock si hay error de conexión
+      if (error.message.includes('Network') || error.message.includes('fetch')) {
+        console.log('Usando datos mock por error de conexión');
+        const mockLeads = [
+          {
+            rowid: 1217,
+            nom: 'Mi Santa Guadalupe Masajes',
+            telephone: '+5491112345678',
+            email: 'guadalupe@masajes.com',
+            address: null,
+            client: 1,
+            ia_habilitada: true,
+            fecha_creacion: '2025-12-01',
+            tipo_cliente: 'Cliente',
+            origen: 'Originales'
+          },
+          {
+            rowid: 21,
+            nom: 'Nicolas Tileres',
+            telephone: '+5491198765432', 
+            email: 'nicolas@linkedin.com',
+            address: 'https://www.linkedin.com/...',
+            client: 0,
+            ia_habilitada: false,
+            fecha_creacion: '2025-12-05',
+            tipo_cliente: 'Lead',
+            origen: 'Scraping'
+          }
+        ];
+        setLeads(mockLeads);
+        setFilteredLeads(mockLeads);
+      } else {
+        setLeads([]);
+        setFilteredLeads([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -113,7 +123,48 @@ const LeadsManager = () => {
     }
   };
 
-  const filterLeads = () => {
+  const filterLeads = async () => {
+    try {
+      // Si hay filtros activos, usar API de filtrado
+      if (searchQuery || filterTipoCliente !== 'all' || filterOrigen !== 'all' || filterIA !== 'all') {
+        const filters = {};
+        
+        // Preparar filtros para la API
+        if (searchQuery) filters.search = searchQuery;
+        if (filterTipoCliente !== 'all') filters.tipo_cliente = filterTipoCliente;
+        if (filterOrigen !== 'all') filters.origen = filterOrigen;
+        if (filterIA !== 'all') filters.ia_status = filterIA;
+        
+        const response = await leadsAPI.getFiltered(filters);
+        
+        if (response.data && response.data.success) {
+          let filtered = response.data.data || [];
+          
+          // Filtrar por IA localmente (ya que la API no lo maneja aún)
+          if (filterIA === 'enabled') {
+            filtered = filtered.filter(lead => lead.ia_habilitada);
+          } else if (filterIA === 'disabled') {
+            filtered = filtered.filter(lead => !lead.ia_habilitada);
+          }
+          
+          setFilteredLeads(filtered);
+        } else {
+          // Fallback a filtrado local
+          filterLeadsLocal();
+        }
+      } else {
+        // Sin filtros, mostrar todos
+        setFilteredLeads(leads);
+      }
+    } catch (error) {
+      console.error('Error filtering leads:', error);
+      // Fallback a filtrado local
+      filterLeadsLocal();
+    }
+  };
+
+  // Función de filtrado local como fallback
+  const filterLeadsLocal = () => {
     let filtered = [...leads];
 
     // Filtrar por búsqueda

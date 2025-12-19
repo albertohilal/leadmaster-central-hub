@@ -50,6 +50,10 @@ try {
   app.use('/listener', require('./modules/listener/routes/listenerRoutes'));
   console.log('✅ Módulo listener activado');
   
+  // Test module (comentado temporalmente)
+  // app.use('/test', require('./modules/test/routes/testRoutes'));
+  // console.log('✅ Módulo test activado');
+  
   // Ya no necesitamos rutas mock - todos los módulos están activos
   console.log('🎉 TODOS LOS MÓDULOS ACTIVADOS - SISTEMA LISTO PARA PRODUCCIÓN');
   

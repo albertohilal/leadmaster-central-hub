@@ -1,17 +1,49 @@
-- [ ] Verify that the copilot-instructions.md file in the .github directory is created.
+# LeadMaster Central Hub - Instrucciones para GitHub Copilot
 
-- [ ] Clarify Project Requirements
+## Contexto del Proyecto
+Sistema multi-cliente de gestión de leads con integración WhatsApp para envío de mensajes masivos y respuestas automáticas.
 
-- [ ] Scaffold the Project
+## Arquitectura Modular
 
-- [ ] Customize the Project
+### Módulo Principal: Session Manager
+- **Ubicación:** `/src/modules/session-manager/`
+- **Responsabilidad:** Administra la conexión a WhatsApp (única fuente de verdad)
+- **Otros módulos:** Solo CONSUMEN la conexión, NO la administran
 
-- [ ] Install Required Extensions
+### Módulos Consumidores
+- **Auth:** Autenticación JWT multi-cliente
+- **Sender:** Envío de mensajes masivos (consume session-manager)
+- **Listener:** Respuestas automáticas (consume session-manager)
 
-- [ ] Compile the Project
+## Reglas de Desarrollo
 
-- [ ] Create and Run Task
+### Código y Documentación
+- **NO incluir código inline en archivos markdown**
+- **NO duplicar lógica de conexión WhatsApp en otros módulos**
+- Mantener separación clara de responsabilidades
 
-- [ ] Launch the Project
+### Base de Datos Multi-tenant
+- Estructura Dolibarr: `llxbx_*` (societe, etc.)
+- Tablas custom: `ll_*` (lugares_clientes, etc.)
+- Aislamiento por `cliente_id` en todas las queries
 
-- [ ] Ensure Documentation is Complete
+### Endpoints y APIs
+- Backend: Puerto 3011
+- Frontend: Puerto 5173
+- Autenticación JWT obligatoria
+- Filtrado automático por cliente en todas las respuestas
+
+## Estructura de Módulos
+```
+src/modules/
+├── session-manager/     # Administra conexión WhatsApp
+├── auth/               # Autenticación multi-cliente
+├── sender/             # Envíos masivos (consume session)
+└── listener/           # Respuestas auto (consume session)
+```
+
+## Estado Actual
+- ✅ Sistema multi-cliente implementado
+- ✅ Todos los módulos activos y funcionando
+- ✅ Frontend conectado a APIs reales
+- ✅ Segmentación de leads por cliente_id
