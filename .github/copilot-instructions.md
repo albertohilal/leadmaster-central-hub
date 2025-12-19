@@ -28,7 +28,7 @@ Sistema multi-cliente de gestión de leads con integración WhatsApp para envío
 - Aislamiento por `cliente_id` en todas las queries
 
 ### Endpoints y APIs
-- Backend: Puerto 3011
+- Backend: Puerto 3011 (cambiado desde 3010 por conflictos)
 - Frontend: Puerto 5173
 - Autenticación JWT obligatoria
 - Filtrado automático por cliente en todas las respuestas
