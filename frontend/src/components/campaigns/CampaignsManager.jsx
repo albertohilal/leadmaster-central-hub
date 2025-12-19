@@ -18,6 +18,7 @@ const CampaignsManager = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [editingCampaign, setEditingCampaign] = useState(null);
   const [formData, setFormData] = useState({
@@ -37,12 +38,67 @@ const CampaignsManager = () => {
       // Mock data con diferentes estados para mostrar funcionalidad admin
       const mockCampaigns = [
         {
+          id: 1766019279587,
+          nombre: 'Campaña QA 1766019279587',
+          descripcion: 'Campaña de Quality Assurance para verificar el funcionamiento completo del sistema de envío masivo de WhatsApp.',
+          mensaje: '🔍 Campaña QA en proceso.\n\nEsta campaña forma parte del proceso de verificación de calidad del sistema LeadMaster Central Hub.\n\n✅ Todos los sistemas operativos\n📊 Métricas en tiempo real\n🚀 Listo para producción',
+          estado: isAdmin ? 'programada' : 'pendiente_aprobacion',
+          fecha_creacion: '2025-12-18',
+          fecha_modificacion: '2025-12-19',
+          programada: true,
+          fecha_envio: '2025-12-20T09:00:00',
+          total_destinatarios: 100,
+          enviados: 0,
+          fallidos: 0,
+          pendientes: 100,
+          cliente_id: 51,
+          cliente_nombre: 'Haby',
+          activa: true
+        },
+        {
           id: 1,
+          nombre: '1-Campaña de Prueba',
+          descripcion: 'Primera campaña de prueba del sistema LeadMaster Central Hub para validar la funcionalidad de envío masivo.',
+          mensaje: '🧪 Campaña de Prueba #1\n\nEsta es la primera campaña de prueba del sistema.\n\nObjetivos:\n✅ Validar envío masivo\n✅ Verificar entrega\n✅ Medir respuesta\n\n¡Gracias por ser parte de las pruebas!',
+          estado: isAdmin ? 'lista_envio' : 'pendiente_aprobacion',
+          fecha_creacion: '2025-12-17',
+          fecha_modificacion: '2025-12-19',
+          programada: true,
+          fecha_envio: '2025-12-20T12:00:00',
+          total_destinatarios: 50,
+          enviados: 0,
+          fallidos: 0,
+          pendientes: 50,
+          cliente_id: 51,
+          cliente_nombre: 'Haby',
+          activa: true
+        },
+        {
+          id: 2,
+          nombre: '1-Campaña de Prueba',
+          descripcion: 'Segunda instancia de campaña de prueba para testear diferentes configuraciones y horarios de envío.',
+          mensaje: '📱 Campaña de Prueba - Instancia 2\n\nSegunda prueba del sistema de envíos.\n\nCaracterísticas:\n🔄 Horario diferente\n📈 Métricas mejoradas\n🎯 Segmentación específica\n\n¡Funcionando perfectamente!',
+          estado: 'aprobada',
+          fecha_creacion: '2025-12-17',
+          fecha_modificacion: '2025-12-19',
+          programada: true,
+          fecha_envio: '2025-12-20T13:00:00',
+          total_destinatarios: 50,
+          enviados: 0,
+          fallidos: 0,
+          pendientes: 50,
+          cliente_id: 51,
+          cliente_nombre: 'Haby',
+          activa: true
+        },
+        {
+          id: 3,
           nombre: 'Campaña Navidad 2025',
-          descripcion: 'Promoción especial de fin de año',
-          mensaje: '🎄 ¡Feliz Navidad! Aprovecha nuestras ofertas especiales de fin de año. Descuentos de hasta 50% en productos seleccionados. ¡No te lo pierdas!',
-          estado: isAdmin ? 'programada' : 'pendiente_aprobacion', // Clientes ven "pendiente_aprobacion"
+          descripcion: 'Promoción especial de fin de año con descuentos exclusivos para nuestros clientes más fieles. Esta campaña incluye ofertas en toda la línea de productos navideños.',
+          mensaje: '🎄 ¡Feliz Navidad! Aprovecha nuestras ofertas especiales de fin de año. Descuentos de hasta 50% en productos seleccionados. ¡No te lo pierdas! 🎁\n\nVálido hasta el 31 de diciembre.\nMás info: https://ejemplo.com/navidad',
+          estado: isAdmin ? 'programada' : 'pendiente_aprobacion',
           fecha_creacion: '2025-12-10',
+          fecha_modificacion: '2025-12-15',
           programada: true,
           fecha_envio: '2025-12-25T09:00:00',
           total_destinatarios: 150,
@@ -50,23 +106,26 @@ const CampaignsManager = () => {
           fallidos: 0,
           pendientes: 150,
           cliente_id: 51,
-          cliente_nombre: 'Haby'
+          cliente_nombre: 'Haby',
+          activa: true
         },
         {
-          id: 2,
+          id: 4,
           nombre: 'Seguimiento Leads',
-          descripcion: 'Contacto con leads potenciales',
-          mensaje: 'Hola! 👋 Vi que te interesa nuestros productos. ¿Te gustaría recibir más información personalizada? Estoy aquí para ayudarte.',
+          descripcion: 'Contacto automatizado con leads potenciales que mostraron interés en nuestros productos durante la última semana.',
+          mensaje: 'Hola! 👋 Vi que te interesa nuestros productos. ¿Te gustaría recibir más información personalizada? Estoy aquí para ayudarte.\n\n¿Cuál es el mejor horario para contactarte?',
           estado: 'completada',
           fecha_creacion: '2025-12-05',
+          fecha_modificacion: '2025-12-05',
           programada: false,
-          fecha_envio: '',
+          fecha_envio: '2025-12-05T14:30:00',
           total_destinatarios: 80,
           enviados: 80,
           fallidos: 0,
           pendientes: 0,
           cliente_id: 51,
-          cliente_nombre: 'Haby'
+          cliente_nombre: 'Haby',
+          activa: false
         }
       ];
       
@@ -192,6 +251,13 @@ const CampaignsManager = () => {
     }
   };
 
+  const handleViewDetails = (campaign) => {
+    console.log('Abriendo detalles de campaña:', campaign);
+    setSelectedCampaign(campaign);
+    setShowDetailsModal(true);
+    console.log('showDetailsModal establecido a:', true);
+  };
+
   const handleSendCampaign = (campaign) => {
     setSelectedCampaign(campaign);
     setShowSendModal(true);
@@ -285,10 +351,26 @@ const CampaignsManager = () => {
               : "Administra tus envíos masivos de WhatsApp"
             }
           </p>
+          {/* Debug info temporal */}
+          <p className="text-xs text-blue-600 mt-1">
+            Debug: {campaigns.length} campañas | showDetailsModal: {showDetailsModal ? 'true' : 'false'}
+          </p>
         </div>
-        <Button variant="primary" onClick={handleCreateCampaign}>
-          + Nueva Campaña
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="primary" onClick={handleCreateCampaign}>
+            + Nueva Campaña
+          </Button>
+          <Button variant="secondary" onClick={() => console.log('Debug - Campaigns:', campaigns, 'Modal states:', {showDetailsModal, showStatsModal, showEditModal})}>
+            🐛 Debug
+          </Button>
+          <Button variant="info" onClick={() => {
+            setSelectedCampaign(campaigns[0]);
+            setShowDetailsModal(true);
+            console.log('Test: Abriendo modal con primera campaña:', campaigns[0]);
+          }}>
+            🧪 Test Modal
+          </Button>
+        </div>
       </div>
 
       {/* Estadísticas Generales */}
@@ -367,6 +449,9 @@ const CampaignsManager = () => {
                     </p>
                   </div>
                   <div className="flex gap-3">
+                    <Button variant="outline" onClick={() => handleViewDetails(campaign)}>
+                      📄 Ver Detalles
+                    </Button>
                     <Button variant="secondary" onClick={() => handleViewStats(campaign)}>
                       Ver Estadísticas
                     </Button>
@@ -677,6 +762,153 @@ const CampaignsManager = () => {
                   <dd className="text-sm font-medium text-gray-800">{selectedCampaign.descripcion}</dd>
                 </div>
               </dl>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Detalles de Campaña */}
+      <Modal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        title={selectedCampaign ? `Detalles: ${selectedCampaign.nombre}` : 'Detalles de Campaña'}
+        size="large"
+      >
+        {selectedCampaign && (
+          <div className="space-y-6">
+            {/* Información general */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">{selectedCampaign.nombre}</h3>
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 ${getStatusColor(selectedCampaign.estado)}`}>
+                    {getStatusText(selectedCampaign.estado)}
+                  </span>
+                </div>
+                {isAdmin && selectedCampaign.cliente_nombre && (
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-lg font-medium">
+                    Cliente: {selectedCampaign.cliente_nombre}
+                  </span>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Fecha de creación:</span>
+                  <p className="font-medium text-gray-800">{selectedCampaign.fecha_creacion}</p>
+                </div>
+                <div>
+                  <span className="text-gray-600">Última modificación:</span>
+                  <p className="font-medium text-gray-800">{selectedCampaign.fecha_modificacion || selectedCampaign.fecha_creacion}</p>
+                </div>
+                {selectedCampaign.programada && (
+                  <>
+                    <div>
+                      <span className="text-gray-600">Fecha de envío:</span>
+                      <p className="font-medium text-gray-800">{selectedCampaign.fecha_envio}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Programada:</span>
+                      <p className="font-medium text-green-600">Sí</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Descripción */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                📝 Descripción
+              </h4>
+              <p className="text-gray-700 leading-relaxed">{selectedCampaign.descripcion}</p>
+            </div>
+
+            {/* Mensaje de la campaña */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                💬 Mensaje de la campaña
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-green-400">
+                <p className="text-gray-800 whitespace-pre-wrap">{selectedCampaign.mensaje}</p>
+              </div>
+              <div className="mt-3 text-sm text-gray-600">
+                <span className="font-medium">Longitud:</span> {selectedCampaign.mensaje.length} caracteres
+              </div>
+            </div>
+
+            {/* Estadísticas rápidas */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
+                📊 Estadísticas
+              </h4>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <p className="text-2xl font-bold text-gray-800">{selectedCampaign.total_destinatarios}</p>
+                  <p className="text-sm text-gray-600">Destinatarios</p>
+                </div>
+                <div className="text-center p-3 bg-green-50 rounded-lg">
+                  <p className="text-2xl font-bold text-green-600">{selectedCampaign.enviados}</p>
+                  <p className="text-sm text-gray-600">Enviados</p>
+                </div>
+                <div className="text-center p-3 bg-red-50 rounded-lg">
+                  <p className="text-2xl font-bold text-red-600">{selectedCampaign.fallidos}</p>
+                  <p className="text-sm text-gray-600">Fallidos</p>
+                </div>
+                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                  <p className="text-2xl font-bold text-blue-600">{calculateSuccessRate(selectedCampaign)}%</p>
+                  <p className="text-sm text-gray-600">Éxito</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Configuración técnica */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h4 className="font-semibold text-gray-800 mb-4 flex items-center">
+                ⚙️ Configuración técnica
+              </h4>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">ID de campaña:</span>
+                  <p className="font-medium text-gray-800">{selectedCampaign.id}</p>
+                </div>
+                <div>
+                  <span className="text-gray-600">Tipo:</span>
+                  <p className="font-medium text-gray-800">
+                    {selectedCampaign.programada ? 'Programada' : 'Manual'}
+                  </p>
+                </div>
+                {selectedCampaign.cliente_id && (
+                  <div>
+                    <span className="text-gray-600">Cliente ID:</span>
+                    <p className="font-medium text-gray-800">{selectedCampaign.cliente_id}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-gray-600">Estado del sistema:</span>
+                  <p className="font-medium text-gray-800">
+                    {selectedCampaign.activa ? 'Activa' : 'Inactiva'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Acciones rápidas */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              {selectedCampaign.estado !== 'completada' && selectedCampaign.estado !== 'enviando' && (
+                <Button variant="info" onClick={() => {
+                  setShowDetailsModal(false);
+                  handleEditCampaign(selectedCampaign);
+                }}>
+                  ✏️ Editar Campaña
+                </Button>
+              )}
+              <Button variant="secondary" onClick={() => {
+                setShowDetailsModal(false);
+                handleViewStats(selectedCampaign);
+              }}>
+                📊 Ver Estadísticas Completas
+              </Button>
             </div>
           </div>
         )}
