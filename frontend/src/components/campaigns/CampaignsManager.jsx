@@ -4,14 +4,19 @@ import Button from '../common/Button';
 import LoadingSpinner from '../common/LoadingSpinner';
 import Modal from '../common/Modal';
 import { senderAPI, leadsAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import ProgramacionesForm from './ProgramacionesForm';
 import ProgramacionesList from './ProgramacionesList';
 
 const CampaignsManager = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.tipo === 'admin';
+  
   const [loading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -27,18 +32,20 @@ const CampaignsManager = () => {
 
   const loadCampaigns = async () => {
     try {
-      // Mock data por ahora
+      // Mock data con diferentes estados para mostrar funcionalidad admin
       const mockCampaigns = [
         {
           id: 1,
           nombre: 'Campaña Navidad 2025',
           descripcion: 'Promoción especial de fin de año',
-          estado: 'activa',
+          estado: isAdmin ? 'programada' : 'pendiente_aprobacion', // Clientes ven "pendiente_aprobacion"
           fecha_creacion: '2025-12-10',
           total_destinatarios: 150,
-          enviados: 120,
-          fallidos: 5,
-          pendientes: 25
+          enviados: 0,
+          fallidos: 0,
+          pendientes: 150,
+          cliente_id: 51,
+          cliente_nombre: 'Haby'
         },
         {
           id: 2,
@@ -49,7 +56,9 @@ const CampaignsManager = () => {
           total_destinatarios: 80,
           enviados: 80,
           fallidos: 0,
-          pendientes: 0
+          pendientes: 0,
+          cliente_id: 51,
+          cliente_nombre: 'Haby'
         }
       ];
       
@@ -94,16 +103,46 @@ const CampaignsManager = () => {
     }
   };
 
+  const handleSendCampaign = (campaign) => {
+    setSelectedCampaign(campaign);
+    setShowSendModal(true);
+  };
+
+  const confirmSendCampaign = async () => {
+    try {
+      if (!selectedCampaign) return;
+      
+      // Simular envío de campaña
+      const updatedCampaigns = campaigns.map(c => 
+        c.id === selectedCampaign.id 
+          ? { ...c, estado: 'activa', enviados: Math.floor(c.total_destinatarios * 0.8) }
+          : c
+      );
+      
+      setCampaigns(updatedCampaigns);
+      setShowSendModal(false);
+      setSelectedCampaign(null);
+      alert('Campaña enviada exitosamente');
+    } catch (error) {
+      console.error('Error sending campaign:', error);
+      alert('Error al enviar campaña');
+    }
+  };
+
   const getStatusColor = (estado) => {
     switch (estado) {
       case 'activa':
-        return 'bg-success';
+        return 'bg-green-500';
       case 'completada':
-        return 'bg-primary';
+        return 'bg-blue-500';
       case 'programada':
-        return 'bg-warning';
+        return 'bg-yellow-500';
+      case 'pendiente_aprobacion':
+        return 'bg-orange-500';
       case 'pausada':
         return 'bg-gray-400';
+      case 'rechazada':
+        return 'bg-red-500';
       default:
         return 'bg-gray-400';
     }
@@ -116,9 +155,13 @@ const CampaignsManager = () => {
       case 'completada':
         return 'Completada';
       case 'programada':
-        return 'Programada';
+        return isAdmin ? 'Lista para enviar' : 'Programada';
+      case 'pendiente_aprobacion':
+        return 'Pendiente Aprobación';
       case 'pausada':
         return 'Pausada';
+      case 'rechazada':
+        return 'Rechazada';
       default:
         return estado;
     }
@@ -139,8 +182,20 @@ const CampaignsManager = () => {
       {/* Título y acciones */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Gestión de Campañas</h1>
-          <p className="text-gray-600 mt-1">Administra tus envíos masivos de WhatsApp</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-800">Gestión de Campañas</h1>
+            {isAdmin && (
+              <span className="bg-purple-100 text-purple-800 text-sm font-medium px-3 py-1 rounded-full">
+                👑 Panel Administrador
+              </span>
+            )}
+          </div>
+          <p className="text-gray-600 mt-1">
+            {isAdmin 
+              ? "Administra y envía campañas de todos los clientes" 
+              : "Administra tus envíos masivos de WhatsApp"
+            }
+          </p>
         </div>
         <Button variant="primary" onClick={handleCreateCampaign}>
           + Nueva Campaña
@@ -211,15 +266,27 @@ const CampaignsManager = () => {
                       <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(campaign.estado)}`}>
                         {getStatusText(campaign.estado)}
                       </span>
+                      {isAdmin && campaign.cliente_nombre && (
+                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                          Cliente: {campaign.cliente_nombre}
+                        </span>
+                      )}
                     </div>
                     <p className="text-gray-600 mb-2">{campaign.descripcion}</p>
                     <p className="text-sm text-gray-500">
                       Creada el {campaign.fecha_creacion}
                     </p>
                   </div>
-                  <Button variant="primary" onClick={() => handleViewStats(campaign)}>
-                    Ver Estadísticas
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button variant="secondary" onClick={() => handleViewStats(campaign)}>
+                      Ver Estadísticas
+                    </Button>
+                    {isAdmin && (campaign.estado === 'programada' || campaign.estado === 'pendiente_aprobacion') && (
+                      <Button variant="primary" onClick={() => handleSendCampaign(campaign)}>
+                        🚀 Enviar Campaña
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Barra de progreso */}
@@ -412,6 +479,59 @@ const CampaignsManager = () => {
                   <dd className="text-sm font-medium text-gray-800">{selectedCampaign.descripcion}</dd>
                 </div>
               </dl>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Enviar Campaña (Solo Admin) */}
+      <Modal
+        isOpen={showSendModal}
+        onClose={() => setShowSendModal(false)}
+        title="Confirmar Envío de Campaña"
+        size="medium"
+      >
+        {selectedCampaign && (
+          <div className="space-y-6">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <span className="text-2xl mr-3">⚠️</span>
+                <div>
+                  <h4 className="font-bold text-orange-800">¡Atención!</h4>
+                  <p className="text-orange-700">Esta acción iniciará el envío inmediato de la campaña y no se puede deshacer.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-800 mb-3">Detalles de la campaña:</h4>
+              <dl className="space-y-2">
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Nombre:</dt>
+                  <dd className="text-sm font-medium text-gray-800">{selectedCampaign.nombre}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Cliente:</dt>
+                  <dd className="text-sm font-medium text-gray-800">{selectedCampaign.cliente_nombre}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Total destinatarios:</dt>
+                  <dd className="text-sm font-medium text-gray-800">{selectedCampaign.total_destinatarios}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-sm text-gray-600">Estado actual:</dt>
+                  <dd className="text-sm font-medium text-gray-800">{getStatusText(selectedCampaign.estado)}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <Button variant="secondary" onClick={() => setShowSendModal(false)}>
+                Cancelar
+              </Button>
+              <Button variant="danger" onClick={confirmSendCampaign}>
+                🚀 Confirmar Envío
+              </Button>
             </div>
           </div>
         )}

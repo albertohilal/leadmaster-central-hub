@@ -5,9 +5,10 @@
 2. [Vista General](#vista-general)
 3. [Estadísticas Principales](#estadisticas)
 4. [Programación de Campañas](#programacion)
-5. [Gestión de Campañas Existentes](#gestion-campanas)
-6. [Funciones Avanzadas](#funciones-avanzadas)
-7. [Guía de Solución de Problemas](#troubleshooting)
+5. [Estados de Campaña y Permisos de Envío](#estados-permisos)
+6. [Gestión de Campañas Existentes](#gestion-campanas)
+7. [Funciones Avanzadas](#funciones-avanzadas)
+8. [Guía de Solución de Problemas](#troubleshooting)
 
 ---
 
@@ -19,8 +20,19 @@
 3. Serás redirigido a la vista principal de gestión de campañas
 
 ### Permisos Requeridos
-- **Usuario Cliente**: Acceso completo a sus propias campañas
-- **Usuario Admin**: Acceso a todas las campañas del sistema
+- **Usuario Cliente**: 
+  - Crear y programar campañas
+  - Ver estadísticas de sus propias campañas
+  - NO puede enviar campañas (requiere aprobación admin)
+- **Usuario Administrador**: 
+  - Ver todas las campañas de todos los clientes
+  - Enviar campañas aprobadas
+  - Panel especial marcado con "👑 Panel Administrador"
+
+### Flujo de Trabajo
+1. **Cliente**: Crea y programa campaña → Estado: "Pendiente Aprobación"
+2. **Admin**: Revisa campaña → Puede enviarla → Estado: "Activa"
+3. **Sistema**: Procesa envío → Estado: "Completada"
 
 ---
 
@@ -29,14 +41,17 @@
 La interfaz de Campañas está dividida en tres secciones principales:
 
 ### Encabezado
-- **Título**: "Gestión de Campañas"
-- **Descripción**: "Administra tus envíos masivos de WhatsApp"
+- **Título**: "Gestión de Campañas" 
+- **Indicador Admin**: Badge morado "👑 Panel Administrador" (solo admins)
+- **Descripción**: 
+  - Cliente: "Administra tus envíos masivos de WhatsApp"
+  - Admin: "Administra y envía campañas de todos los clientes"
 - **Botón de Acción**: "+ Nueva Campaña" (azul, esquina superior derecha)
 
 ### Secciones Principales
 1. **Panel de Estadísticas** (4 tarjetas en fila)
 2. **Programación de Campañas** (2 columnas)
-3. **Lista de Campañas** (vista detallada)
+3. **Lista de Campañas** (vista detallada con permisos diferenciados)
 
 ---
 
@@ -138,9 +153,60 @@ Cada programación se muestra como una tarjeta con:
 
 ---
 
-## 5. Gestión de Campañas Existentes {#gestion-campanas}
+## 5. Estados de Campaña y Permisos de Envío {#estados-permisos}
 
-### 5.1 Lista de Campañas
+### 5.1 Estados Disponibles
+
+#### **Para Clientes**
+- 🟠 **Pendiente Aprobación**: Campaña creada, esperando revisión del admin
+- 🔵 **Completada**: Campaña finalizada exitosamente
+- ⚫ **Pausada**: Temporalmente detenida
+- 🔴 **Rechazada**: No aprobada por el administrador
+
+#### **Para Administradores**  
+- 🟡 **Lista para enviar**: Campaña programada y lista para activar
+- 🟢 **Activa**: Campaña en proceso de envío
+- 🔵 **Completada**: Campaña finalizada exitosamente
+- ⚫ **Pausada**: Temporalmente detenida
+- 🔴 **Rechazada**: Campaña no aprobada
+
+### 5.2 Funciones por Rol
+
+#### **Clientes**
+- ✅ Crear nuevas campañas
+- ✅ Programar horarios y días
+- ✅ Ver estadísticas propias
+- ❌ **NO pueden enviar** (requiere admin)
+
+#### **Administradores**
+- ✅ Ver todas las campañas de todos los clientes
+- ✅ **Enviar campañas aprobadas** (botón "🚀 Enviar Campaña")
+- ✅ Revisar detalles antes del envío
+- ✅ Confirmar envío con modal de seguridad
+
+### 5.3 Proceso de Envío (Solo Admin)
+
+#### Botón de Envío
+- **Ubicación**: Lado derecho de cada campaña (solo admins)
+- **Texto**: "🚀 Enviar Campaña"
+- **Disponible para**: Campañas con estado "Lista para enviar" o "Pendiente Aprobación"
+
+#### Modal de Confirmación
+1. **Advertencia**: Mensaje de que la acción es irreversible
+2. **Detalles**: Resumen de la campaña a enviar
+3. **Cliente**: Nombre del cliente propietario
+4. **Destinatarios**: Cantidad total a contactar
+5. **Botones**: "Cancelar" o "🚀 Confirmar Envío"
+
+#### Identificación Visual
+- **Badge Cliente**: Los admins ven "Cliente: [Nombre]" en cada campaña
+- **Panel Admin**: Título "👑 Panel Administrador" en la cabecera
+
+---
+
+## 6. Gestión de Campañas Existentes {#gestion-campanas}
+
+### 6.1 Lista de Campañas
 
 #### Formato de Tarjeta Individual
 
@@ -148,12 +214,17 @@ Cada programación se muestra como una tarjeta con:
 - **Nombre de campaña**: Título principal (texto grande, negrita)
 - **Estado**: Badge coloreado junto al nombre
   - 🟢 "Activa" (verde)
-  - 🔵 "Completada" (azul)
-  - 🟡 "Programada" (amarillo)
+  - 🔵 "Completada" (azul)  
+  - 🟡 "Lista para enviar" (amarillo, solo admin)
+  - 🟠 "Pendiente Aprobación" (naranja)
   - ⚫ "Pausada" (gris)
+  - 🔴 "Rechazada" (rojo)
+- **Badge Cliente**: "Cliente: [Nombre]" (solo para admins)
 - **Descripción**: Texto explicativo bajo el título
 - **Fecha de creación**: Texto pequeño gris
-- **Botón**: "Ver Estadísticas" (azul, lado derecho)
+- **Botones**:
+  - "Ver Estadísticas" (secundario, todos los usuarios)
+  - "🚀 Enviar Campaña" (primario, solo admins en campañas listas)
 
 ##### **Barra de Progreso**
 - **Etiqueta**: "Progreso del envío"
