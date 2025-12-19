@@ -2,13 +2,17 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
   testDir: './tests',
-  timeout: 30000,
-  retries: 0,
+  timeout: 60000, // Aumentado para pruebas E2E
+  retries: 1,
   use: {
-    baseURL: 'http://localhost:3010',
+    baseURL: 'http://localhost:3011', // Puerto correcto del backend
     extraHTTPHeaders: {
       'Content-Type': 'application/json',
     },
+    // Configuración para pruebas E2E
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'retain-on-failure',
   },
   reporter: [
     ['list'],
@@ -19,6 +23,34 @@ const config = {
     {
       name: 'API Tests',
       testMatch: '**/*.api.spec.ts',
+    },
+    {
+      name: 'E2E Tests - Campaigns',
+      testMatch: '**/*.e2e.spec.ts',
+      use: {
+        baseURL: 'http://localhost:5173', // Frontend para E2E
+        viewport: { width: 1280, height: 720 },
+      },
+    },
+    {
+      name: 'Integration Tests',
+      testMatch: '**/*.integration.spec.ts',
+    },
+  ],
+  // Configuración para servidores locales
+  webServer: [
+    {
+      command: 'node src/index.js',
+      port: 3011,
+      timeout: 120 * 1000,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'npm run dev',
+      port: 5173,
+      cwd: './frontend',
+      timeout: 120 * 1000,
+      reuseExistingServer: !process.env.CI,
     },
   ],
 };

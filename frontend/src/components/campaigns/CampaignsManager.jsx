@@ -15,9 +15,11 @@ const CampaignsManager = () => {
   const [loading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [editingCampaign, setEditingCampaign] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -38,8 +40,11 @@ const CampaignsManager = () => {
           id: 1,
           nombre: 'Campaña Navidad 2025',
           descripcion: 'Promoción especial de fin de año',
+          mensaje: '🎄 ¡Feliz Navidad! Aprovecha nuestras ofertas especiales de fin de año. Descuentos de hasta 50% en productos seleccionados. ¡No te lo pierdas!',
           estado: isAdmin ? 'programada' : 'pendiente_aprobacion', // Clientes ven "pendiente_aprobacion"
           fecha_creacion: '2025-12-10',
+          programada: true,
+          fecha_envio: '2025-12-25T09:00:00',
           total_destinatarios: 150,
           enviados: 0,
           fallidos: 0,
@@ -51,8 +56,11 @@ const CampaignsManager = () => {
           id: 2,
           nombre: 'Seguimiento Leads',
           descripcion: 'Contacto con leads potenciales',
+          mensaje: 'Hola! 👋 Vi que te interesa nuestros productos. ¿Te gustaría recibir más información personalizada? Estoy aquí para ayudarte.',
           estado: 'completada',
           fecha_creacion: '2025-12-05',
+          programada: false,
+          fecha_envio: '',
           total_destinatarios: 80,
           enviados: 80,
           fallidos: 0,
@@ -81,6 +89,24 @@ const CampaignsManager = () => {
     setShowCreateModal(true);
   };
 
+  const handleEditCampaign = (campaign) => {
+    // Solo permitir editar si la campaña no ha sido enviada
+    if (campaign.estado === 'completada') {
+      alert('No se pueden editar campañas que ya han sido enviadas');
+      return;
+    }
+    
+    setEditingCampaign(campaign);
+    setFormData({
+      nombre: campaign.nombre,
+      descripcion: campaign.descripcion,
+      mensaje: campaign.mensaje || '',
+      programada: campaign.programada || false,
+      fecha_envio: campaign.fecha_envio || ''
+    });
+    setShowEditModal(true);
+  };
+
   const handleSaveCampaign = async () => {
     try {
       await senderAPI.createCampaign(formData);
@@ -90,6 +116,32 @@ const CampaignsManager = () => {
     } catch (error) {
       console.error('Error creating campaign:', error);
       alert('Error al crear campaña');
+    }
+  };
+
+  const handleSaveEditCampaign = async () => {
+    try {
+      console.log('Editando campaña:', editingCampaign.id, formData);
+      // Aquí iría la llamada a la API para actualizar
+      // await senderAPI.updateCampaign(editingCampaign.id, formData);
+      
+      // Actualizar la campaña en el estado local (simulación)
+      setCampaigns(campaigns.map(campaign => 
+        campaign.id === editingCampaign.id 
+          ? { 
+              ...campaign, 
+              ...formData, 
+              estado: campaign.estado === 'completada' ? campaign.estado : 'pendiente_aprobacion' 
+            }
+          : campaign
+      ));
+      
+      alert('Campaña editada exitosamente. Estado cambiado a "Pendiente Aprobación".');
+      setShowEditModal(false);
+      setEditingCampaign(null);
+    } catch (error) {
+      console.error('Error al editar campaña:', error);
+      alert('Error al editar campaña');
     }
   };
 
@@ -281,6 +333,14 @@ const CampaignsManager = () => {
                     <Button variant="secondary" onClick={() => handleViewStats(campaign)}>
                       Ver Estadísticas
                     </Button>
+                    
+                    {/* Solo mostrar botón editar si la campaña no está completada */}
+                    {campaign.estado !== 'completada' && campaign.estado !== 'enviando' && (
+                      <Button variant="info" onClick={() => handleEditCampaign(campaign)}>
+                        ✏️ Editar
+                      </Button>
+                    )}
+                    
                     {isAdmin && (campaign.estado === 'programada' || campaign.estado === 'pendiente_aprobacion') && (
                       <Button variant="primary" onClick={() => handleSendCampaign(campaign)}>
                         🚀 Enviar Campaña
@@ -413,6 +473,107 @@ const CampaignsManager = () => {
             </Button>
             <Button variant="primary" onClick={handleSaveCampaign}>
               Crear Campaña
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal Editar Campaña */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingCampaign(null);
+        }}
+        title={`Editar Campaña: ${editingCampaign?.nombre}`}
+        size="large"
+      >
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center">
+              <span className="text-2xl mr-3">ℹ️</span>
+              <div>
+                <h4 className="font-bold text-blue-800">Información</h4>
+                <p className="text-blue-700">Los cambios requerirán nueva aprobación del administrador antes del envío.</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de la campaña *</label>
+            <input
+              type="text"
+              value={formData.nombre}
+              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="Ej: Promoción Navidad 2025"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <textarea
+              value={formData.descripcion}
+              onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              rows="3"
+              placeholder="Describe el objetivo de esta campaña..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje *</label>
+            <textarea
+              value={formData.mensaje}
+              onChange={(e) => setFormData({ ...formData, mensaje: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              rows="5"
+              placeholder="Escribe el mensaje que se enviará a los destinatarios..."
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.mensaje.length} caracteres
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={formData.programada}
+              onChange={(e) => setFormData({ ...formData, programada: e.target.checked })}
+              className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+            />
+            <label className="text-sm font-medium text-gray-700">Programar envío</label>
+          </div>
+
+          {formData.programada && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha y hora de envío</label>
+              <input
+                type="datetime-local"
+                value={formData.fecha_envio}
+                onChange={(e) => setFormData({ ...formData, fecha_envio: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+          )}
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-sm text-yellow-800">
+              <strong>Nota:</strong> Al editar una campaña, su estado cambiará a "Pendiente Aprobación" y requerirá nueva autorización del administrador.
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button variant="secondary" onClick={() => {
+              setShowEditModal(false);
+              setEditingCampaign(null);
+            }}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleSaveEditCampaign}>
+              💾 Guardar Cambios
             </Button>
           </div>
         </div>
