@@ -2,6 +2,13 @@
 
 > **Regla clave:** Ningún endpoint, router ni módulo debe tener código inline. Todo handler, lógica o respuesta debe estar en controladores o servicios desacoplados.
 
+## 🚨 ESTADO ACTUAL (19 dic 2025)
+
+**✅ COMPLETADOS:** Frontend, módulos desarrollados, tests, autenticación
+**❌ PENDIENTE CRÍTICO:** Integración final de módulos en servidor principal
+
+**Ver detalles completos en:** `/docs/PRIORIDADES_FRONTEND.md`
+
 ## Orden de prioridades
 
 1. **Gestión de sesiones/conexiones WhatsApp** ✅ _completado_
@@ -34,10 +41,11 @@
    - **Branding DyD con logos integrados** ✅
    - **Sistema multi-tenant por cliente_id** ✅
    - **Ubicación:** `/frontend/`
+   - **📋 PENDIENTES CRÍTICOS PARA PRODUCCIÓN:** Ver `/docs/PRIORIDADES_FRONTEND.md`
    - **Documentación:** 
-     - `/docs/frontend/ARQUITECTURA_FRONTEND.md` (guía completa React/Vite/Tailwind)
-     - `/docs/frontend/GUIA_RAPIDA.md` (inicio rápido)
-     - `/docs/frontend/PRIORIDADES_FRONTEND.md` (fases de desarrollo)
+     - `/docs/PRIORIDADES_FRONTEND.md` (consolidado - incluye pendientes producción)
+     - `/frontend/docs/ARQUITECTURA_FRONTEND.md` (guía completa React/Vite/Tailwind)
+     - `/frontend/docs/GUIA_RAPIDA.md` (inicio rápido)
      - `/docs/AUTENTICACION.md` (sistema de auth completo)
 5. **Gestión de leads/clientes (Backend)**
    - Consulta, edición y administración de leads/clientes existentes.
