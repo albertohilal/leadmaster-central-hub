@@ -90,9 +90,22 @@ const CampaignsManager = () => {
   };
 
   const handleEditCampaign = (campaign) => {
-    // Solo permitir editar si la campaña no ha sido enviada
-    if (campaign.estado === 'completada') {
-      alert('No se pueden editar campañas que ya han sido enviadas');
+    // Validaciones más restrictivas para proteger integridad de datos
+    const estadosNoEditables = ['activa', 'completada', 'pausada'];
+    const hayEnviados = campaign.enviados > 0;
+    
+    if (estadosNoEditables.includes(campaign.estado) || hayEnviados) {
+      let mensaje = 'No se pueden editar campañas que ya han comenzado a enviarse.';
+      
+      if (hayEnviados) {
+        mensaje += `\n\nEsta campaña ya tiene ${campaign.enviados} mensajes enviados.`;
+        mensaje += '\nEditar el contenido crearía inconsistencias en los datos.';
+      } else {
+        mensaje += `\n\nEstado actual: "${campaign.estado}"`;
+        mensaje += '\nSolo se pueden editar campañas en estado: pendiente, pendiente_aprobacion, programada';
+      }
+      
+      alert(mensaje);
       return;
     }
     
@@ -122,26 +135,50 @@ const CampaignsManager = () => {
   const handleSaveEditCampaign = async () => {
     try {
       console.log('Editando campaña:', editingCampaign.id, formData);
-      // Aquí iría la llamada a la API para actualizar
-      // await senderAPI.updateCampaign(editingCampaign.id, formData);
       
-      // Actualizar la campaña en el estado local (simulación)
+      // Llamada real a la API
+      const response = await senderAPI.updateCampaign(editingCampaign.id, formData);
+      
+      // Actualizar la campaña en el estado local con la respuesta del servidor
       setCampaigns(campaigns.map(campaign => 
         campaign.id === editingCampaign.id 
           ? { 
               ...campaign, 
               ...formData, 
-              estado: campaign.estado === 'completada' ? campaign.estado : 'pendiente_aprobacion' 
+              estado: response.data.data.estado // Estado del servidor
             }
           : campaign
       ));
       
-      alert('Campaña editada exitosamente. Estado cambiado a "Pendiente Aprobación".');
+      // Mostrar mensaje de éxito del servidor
+      alert(response.data.message || 'Campaña editada exitosamente. Estado cambiado a "Pendiente Aprobación".');
+      
       setShowEditModal(false);
       setEditingCampaign(null);
+      
+      // Recargar campañas para sincronizar con servidor
+      await loadCampaigns();
+      
     } catch (error) {
       console.error('Error al editar campaña:', error);
-      alert('Error al editar campaña');
+      
+      // Manejar errores específicos del servidor
+      if (error.response?.data?.error) {
+        const errorData = error.response.data;
+        let errorMessage = errorData.error;
+        
+        // Agregar detalles si están disponibles
+        if (errorData.details) {
+          errorMessage += `\n\nDetalles:`;
+          errorMessage += `\nEstado actual: ${errorData.details.estado_actual}`;
+          errorMessage += `\nMensajes enviados: ${errorData.details.mensajes_enviados}`;
+          errorMessage += `\nRazón: ${errorData.details.razon}`;
+        }
+        
+        alert(errorMessage);
+      } else {
+        alert('Error al editar campaña. Inténtalo de nuevo.');
+      }
     }
   };
 

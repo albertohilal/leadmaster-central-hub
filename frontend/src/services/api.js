@@ -68,12 +68,32 @@ export const senderAPI = {
   sendMessage: (data) => api.post('/sender/messages/send', data),
   sendBulk: (data) => api.post('/sender/messages/bulk', data),
   getMessageStatus: (id) => api.get(`/sender/messages/status/${id}`),
+  
   // Programaciones
   listProgramaciones: (params) => api.get('/sender/programaciones', { params }),
   createProgramacion: (data) => api.post('/sender/programaciones', data),
+  updateProgramacion: (id, data) => api.put(`/sender/programaciones/${id}`, data),
+  deleteProgramacion: (id) => api.delete(`/sender/programaciones/${id}`),
+  
+  // Campañas - CRUD completo con validaciones de seguridad
   getCampaigns: () => api.get('/sender/campaigns'),
+  getCampaign: (id) => api.get(`/sender/campaigns/${id}`),
   createCampaign: (data) => api.post('/sender/campaigns', data),
+  /**
+   * Actualizar campaña existente
+   * @param {string|number} id - ID de la campaña
+   * @param {Object} data - Datos para actualizar (nombre, descripcion, mensaje, programada, fecha_envio)
+   * @returns {Promise} Respuesta de la API
+   * @throws {Error} Si la campaña no se puede editar (ya enviada, estado no válido)
+   */
+  updateCampaign: (id, data) => api.put(`/sender/campaigns/${id}`, data),
+  deleteCampaign: (id) => api.delete(`/sender/campaigns/${id}`),
   getCampaignStats: (id) => api.get(`/sender/campaigns/${id}/stats`),
+  
+  // Envíos (solo admin)
+  sendCampaign: (id) => api.post(`/sender/campaigns/${id}/send`),
+  pauseCampaign: (id) => api.post(`/sender/campaigns/${id}/pause`),
+  resumeCampaign: (id) => api.post(`/sender/campaigns/${id}/resume`),
 };
 
 // ===== LEADS API - MULTI-CLIENT =====
