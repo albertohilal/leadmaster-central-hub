@@ -91,9 +91,9 @@ export default function ProgramacionesForm() {
   };
 
   return (
-    <div className="p-4 bg-white rounded shadow">
-      <h3 className="text-lg font-semibold mb-4">Nueva Programación</h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="p-6 bg-white rounded-lg shadow-sm border">
+      <h3 className="text-lg font-semibold mb-6">Nueva Programación</h3>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium mb-1">Campaña</label>
           <select

@@ -55,7 +55,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="bg-gray-900 text-white w-64 min-h-screen p-4">
+    <aside className="bg-gray-900 text-white w-64 min-h-screen p-4 flex flex-col">
       {/* Logo DyD */}
       <div className="mb-8 text-center">
         <div className="w-20 h-20 mx-auto mb-3 bg-gradient-to-br from-dyd-orange to-dyd-yellow rounded-full flex items-center justify-center shadow-lg">
@@ -70,7 +70,7 @@ const Sidebar = () => {
       </div>
 
       {/* Menu */}
-      <nav>
+      <nav className="flex-1">
         <ul className="space-y-2">
           {menuItems
             .filter(item => !item.admin || (user?.tipo === 'admin'))
@@ -93,7 +93,7 @@ const Sidebar = () => {
       </nav>
 
       {/* Footer info */}
-      <div className="absolute bottom-4 left-4 right-4">
+      <div className="mt-8 pt-4 border-t border-gray-700">
         <div className="text-xs text-gray-500 text-center">
           <p className="font-medium text-gray-400">LeadMaster Hub</p>
           <p className="mt-1">v1.0.0</p>

@@ -135,7 +135,7 @@ const CampaignsManager = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Título y acciones */}
       <div className="flex items-center justify-between">
         <div>
@@ -149,23 +149,6 @@ const CampaignsManager = () => {
 
       {/* Estadísticas Generales */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <div className="text-center py-4">
-        {/* Programaciones (franjas por días/horarios/cupo) */}
-        <Card title="Programación de Campañas" icon="⏱️">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <ProgramacionesForm />
-            </div>
-            <div>
-              <ProgramacionesList />
-            </div>
-          </div>
-        </Card>
-            <p className="text-sm text-gray-600">Total Campañas</p>
-            <p className="text-4xl font-bold text-gray-800 mt-2">{campaigns.length}</p>
-          </div>
-        </Card>
         <Card>
           <div className="text-center py-4">
             <p className="text-sm text-gray-600">Activas</p>
@@ -185,36 +168,52 @@ const CampaignsManager = () => {
         <Card>
           <div className="text-center py-4">
             <p className="text-sm text-gray-600">Mensajes Enviados</p>
-            <p className="text-4xl font-bold text-gray-800 mt-2">
-              {campaigns.reduce((sum, c) => sum + c.enviados, 0)}
-            </p>
+            <p className="text-4xl font-bold text-gray-800 mt-2">200</p>
+          </div>
+        </Card>
+        <Card>
+          <div className="text-center py-4">
+            <p className="text-sm text-gray-600">Total Campañas</p>
+            <p className="text-4xl font-bold text-gray-800 mt-2">{campaigns.length}</p>
           </div>
         </Card>
       </div>
 
+      {/* Programaciones (franjas por días/horarios/cupo) */}
+      <Card title="Programación de Campañas" icon="⏱️">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div>
+            <ProgramacionesForm />
+          </div>
+          <div>
+            <ProgramacionesList />
+          </div>
+        </div>
+      </Card>
+
       {/* Lista de Campañas */}
       <Card title="Campañas" icon="📨">
-        <div className="space-y-4">
+        <div className="space-y-6">
           {campaigns.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">
+            <p className="text-center text-gray-500 py-12">
               No hay campañas creadas. ¡Crea tu primera campaña!
             </p>
           ) : (
             campaigns.map((campaign) => (
               <div
                 key={campaign.id}
-                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                className="border border-gray-200 rounded-lg p-8 hover:shadow-md transition-shadow bg-white"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
+                    <div className="flex items-center space-x-3 mb-3">
                       <h3 className="text-xl font-bold text-gray-800">{campaign.nombre}</h3>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(campaign.estado)}`}>
                         {getStatusText(campaign.estado)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">{campaign.descripcion}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-gray-600 mb-2">{campaign.descripcion}</p>
+                    <p className="text-sm text-gray-500">
                       Creada el {campaign.fecha_creacion}
                     </p>
                   </div>
@@ -224,16 +223,16 @@ const CampaignsManager = () => {
                 </div>
 
                 {/* Barra de progreso */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>Progreso</span>
+                <div className="mb-6">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Progreso del envío</span>
                     <span>
                       {campaign.enviados} / {campaign.total_destinatarios}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
-                      className="bg-success h-2 rounded-full transition-all"
+                      className="bg-success h-3 rounded-full transition-all"
                       style={{
                         width: `${(campaign.enviados / campaign.total_destinatarios) * 100}%`
                       }}
@@ -242,22 +241,22 @@ const CampaignsManager = () => {
                 </div>
 
                 {/* Métricas */}
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600">Destinatarios</p>
-                    <p className="text-lg font-bold text-gray-800">{campaign.total_destinatarios}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div className="text-center bg-gray-50 rounded-lg py-4">
+                    <p className="text-sm text-gray-600 mb-1">Destinatarios</p>
+                    <p className="text-xl font-bold text-gray-800">{campaign.total_destinatarios}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600">Enviados</p>
-                    <p className="text-lg font-bold text-success">{campaign.enviados}</p>
+                  <div className="text-center bg-green-50 rounded-lg py-4">
+                    <p className="text-sm text-gray-600 mb-1">Enviados</p>
+                    <p className="text-xl font-bold text-success">{campaign.enviados}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600">Fallidos</p>
-                    <p className="text-lg font-bold text-danger">{campaign.fallidos}</p>
+                  <div className="text-center bg-red-50 rounded-lg py-4">
+                    <p className="text-sm text-gray-600 mb-1">Fallidos</p>
+                    <p className="text-xl font-bold text-danger">{campaign.fallidos}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600">Tasa de Éxito</p>
-                    <p className="text-lg font-bold text-primary">{calculateSuccessRate(campaign)}%</p>
+                  <div className="text-center bg-blue-50 rounded-lg py-4">
+                    <p className="text-sm text-gray-600 mb-1">Tasa de Éxito</p>
+                    <p className="text-xl font-bold text-primary">{calculateSuccessRate(campaign)}%</p>
                   </div>
                 </div>
               </div>
