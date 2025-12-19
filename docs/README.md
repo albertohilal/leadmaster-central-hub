@@ -20,6 +20,10 @@ Documentación completa del sistema LeadMaster Central Hub.
 ### 🔌 API y endpoints
 - **[ENDPOINTS_SESSION_MANAGER.md](ENDPOINTS_SESSION_MANAGER.md)** - Documentación de endpoints del session-manager
 
+### 📋 Manuales de usuario
+- **[MANUAL_CAMPANAS.md](MANUAL_CAMPANAS.md)** - Manual completo del módulo de Campañas
+- **[MANUAL_TECNICO_CAMPANAS.md](MANUAL_TECNICO_CAMPANAS.md)** - Documentación técnica del módulo de Campañas
+
 ### 🚀 Guías rápidas
 - **[frontend/GUIA_RAPIDA.md](frontend/GUIA_RAPIDA.md)** - Inicio rápido para desarrollo frontend
 
@@ -35,6 +39,8 @@ Documentación completa del sistema LeadMaster Central Hub.
 ├── AUTENTICACION.md                  # Sistema de auth JWT
 ├── INSTALACION_AUTH.md               # Instalación del auth
 ├── ENDPOINTS_SESSION_MANAGER.md      # API del session-manager
+├── MANUAL_CAMPANAS.md                # Manual usuario del módulo Campañas
+├── MANUAL_TECNICO_CAMPANAS.md        # Manual técnico del módulo Campañas
 ├── frontend/                         # 📁 Documentación del frontend
 │   ├── ARQUITECTURA_FRONTEND.md     # Guía completa React/Vite/Tailwind
 │   ├── GUIA_RAPIDA.md               # Inicio rápido frontend
