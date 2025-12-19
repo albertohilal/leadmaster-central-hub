@@ -11,6 +11,8 @@ const LeadsManager = () => {
   const [filteredLeads, setFilteredLeads] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterIA, setFilterIA] = useState('all'); // all, enabled, disabled
+  const [filterTipoCliente, setFilterTipoCliente] = useState('all'); // all, 0, 1, 2, 3
+  const [filterOrigen, setFilterOrigen] = useState('all'); // all, originales, scraping
   const [selectedLead, setSelectedLead] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
@@ -28,29 +30,47 @@ const LeadsManager = () => {
 
   useEffect(() => {
     filterLeads();
-  }, [leads, searchQuery, filterIA]);
+  }, [leads, searchQuery, filterIA, filterTipoCliente, filterOrigen]);
 
   const loadLeads = async () => {
     try {
-      // Por ahora mock data, reemplazar con API real
+      // TODO: Reemplazar con API real que use la query de segmentación
       const mockLeads = [
         {
-          id: 1,
-          nombre: 'Juan Pérez',
-          telefono: '+5491112345678',
-          email: 'juan@example.com',
-          empresa: 'Empresa ABC',
+          rowid: 1217,
+          nom: 'Mi Santa Guadalupe Masajes',
+          telephone: '+5491112345678',
+          email: 'guadalupe@masajes.com',
+          address: null,
+          client: 1, // Original de Haby
           ia_habilitada: true,
-          fecha_creacion: '2025-12-01'
+          fecha_creacion: '2025-12-01',
+          tipo_cliente: 'Cliente',
+          origen: 'Originales'
         },
         {
-          id: 2,
-          nombre: 'María García',
-          telefono: '+5491198765432',
-          email: 'maria@example.com',
-          empresa: 'Empresa XYZ',
+          rowid: 21,
+          nom: 'Nicolas Tileres',
+          telephone: '+5491198765432', 
+          email: 'nicolas@linkedin.com',
+          address: 'https://www.linkedin.com/...',
+          client: 0, // Ex-LinkedIn convertido a lead
           ia_habilitada: false,
-          fecha_creacion: '2025-12-05'
+          fecha_creacion: '2025-12-05',
+          tipo_cliente: 'Lead',
+          origen: 'Scraping'
+        },
+        {
+          rowid: 1335,
+          nom: 'CyberOfice',
+          telephone: '+54113286803',
+          email: 'info@cyberofice.com',
+          address: 'Av. Alcorta, Armando 2186',
+          client: 3, // Proveedor
+          ia_habilitada: false,
+          fecha_creacion: '2025-11-20',
+          tipo_cliente: 'Proveedor',
+          origen: 'Otros'
         }
       ];
       
@@ -63,16 +83,45 @@ const LeadsManager = () => {
     }
   };
 
+  const getTipoClienteIcon = (client) => {
+    switch (client) {
+      case 0: return '🔍'; // Lead
+      case 1: return '👑'; // Cliente (Originales)
+      case 2: return '💬'; // Prospecto
+      case 3: return '🏭'; // Proveedor
+      default: return '❓';
+    }
+  };
+
+  const getTipoClienteColor = (client) => {
+    switch (client) {
+      case 0: return 'bg-gray-100 text-gray-700'; // Lead
+      case 1: return 'bg-blue-100 text-blue-700'; // Cliente
+      case 2: return 'bg-yellow-100 text-yellow-700'; // Prospecto 
+      case 3: return 'bg-green-100 text-green-700'; // Proveedor
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getOrigenBadge = (client) => {
+    if (client === 1) {
+      return <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Originales</span>;
+    } else if (client === 0) {
+      return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Scraping</span>;
+    } else {
+      return <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">Otros</span>;
+    }
+  };
+
   const filterLeads = () => {
     let filtered = [...leads];
 
     // Filtrar por búsqueda
     if (searchQuery) {
       filtered = filtered.filter(lead => 
-        lead.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.telefono.includes(searchQuery) ||
-        lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lead.empresa.toLowerCase().includes(searchQuery.toLowerCase())
+        lead.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lead.telephone.includes(searchQuery) ||
+        (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
@@ -81,6 +130,18 @@ const LeadsManager = () => {
       filtered = filtered.filter(lead => lead.ia_habilitada);
     } else if (filterIA === 'disabled') {
       filtered = filtered.filter(lead => !lead.ia_habilitada);
+    }
+
+    // Filtrar por tipo de cliente
+    if (filterTipoCliente !== 'all') {
+      filtered = filtered.filter(lead => lead.client.toString() === filterTipoCliente);
+    }
+
+    // Filtrar por origen
+    if (filterOrigen === 'originales') {
+      filtered = filtered.filter(lead => lead.client === 1);
+    } else if (filterOrigen === 'scraping') {
+      filtered = filtered.filter(lead => lead.client === 0);
     }
 
     setFilteredLeads(filtered);
@@ -179,26 +240,58 @@ const LeadsManager = () => {
 
       {/* Filtros y búsqueda */}
       <Card>
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Buscar por nombre, teléfono, email o empresa..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
+        <div className="space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Buscar por nombre, teléfono o email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+            <div className="flex gap-2">
+              <select
+                value={filterIA}
+                onChange={(e) => setFilterIA(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="all">Todos (IA)</option>
+                <option value="enabled">Con IA</option>
+                <option value="disabled">Sin IA</option>
+              </select>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <select
-              value={filterIA}
-              onChange={(e) => setFilterIA(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="all">Todos</option>
-              <option value="enabled">Con IA</option>
-              <option value="disabled">Sin IA</option>
-            </select>
+          
+          {/* Nueva fila de filtros de segmentación */}
+          <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-gray-200">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Tipo de Cliente</label>
+              <select
+                value={filterTipoCliente}
+                onChange={(e) => setFilterTipoCliente(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="all">Todos los tipos</option>
+                <option value="0">🔍 Leads</option>
+                <option value="1">👑 Clientes</option>
+                <option value="2">💬 Prospectos</option>
+                <option value="3">🏭 Proveedores</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Origen</label>
+              <select
+                value={filterOrigen}
+                onChange={(e) => setFilterOrigen(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="all">Todos los orígenes</option>
+                <option value="originales">👑 Originales</option>
+                <option value="scraping">🔍 Scraping</option>
+              </select>
+            </div>
           </div>
         </div>
         <div className="mt-4 text-sm text-gray-600">
@@ -214,8 +307,8 @@ const LeadsManager = () => {
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empresa</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Origen</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IA</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
               </tr>
@@ -229,11 +322,26 @@ const LeadsManager = () => {
                 </tr>
               ) : (
                 filteredLeads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-800">{lead.nombre}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{lead.telefono}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{lead.email}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{lead.empresa}</td>
+                  <tr key={lead.rowid} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm">
+                      <div>
+                        <div className="font-medium text-gray-800">{lead.nom}</div>
+                        {lead.email && (
+                          <div className="text-xs text-gray-500">{lead.email}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{lead.telephone}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        getTipoClienteColor(lead.client)
+                      }`}>
+                        {getTipoClienteIcon(lead.client)} {lead.tipo_cliente}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {getOrigenBadge(lead.client)}
+                    </td>
                     <td className="px-4 py-3 text-sm">
                       <button
                         onClick={() => handleToggleIA(lead)}
@@ -261,7 +369,7 @@ const LeadsManager = () => {
                           Editar
                         </button>
                         <button
-                          onClick={() => handleDelete(lead.id)}
+                          onClick={() => handleDelete(lead.rowid)}
                           className="text-danger hover:text-red-700"
                         >
                           Eliminar
@@ -286,29 +394,51 @@ const LeadsManager = () => {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-gray-600">Nombre</p>
-              <p className="text-lg font-medium text-gray-800">{selectedLead.nombre}</p>
+              <p className="text-lg font-medium text-gray-800">{selectedLead.nom}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Teléfono</p>
-              <p className="text-lg font-medium text-gray-800">{selectedLead.telefono}</p>
+              <p className="text-lg font-medium text-gray-800">{selectedLead.telephone}</p>
+            </div>
+            {selectedLead.email && (
+              <div>
+                <p className="text-sm text-gray-600">Email</p>
+                <p className="text-lg font-medium text-gray-800">{selectedLead.email}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-sm text-gray-600">Tipo de Cliente</p>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                getTipoClienteColor(selectedLead.client)
+              }`}>
+                {getTipoClienteIcon(selectedLead.client)} {selectedLead.tipo_cliente}
+              </span>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Email</p>
-              <p className="text-lg font-medium text-gray-800">{selectedLead.email}</p>
+              <p className="text-sm text-gray-600">Origen</p>
+              <div className="mt-1">
+                {getOrigenBadge(selectedLead.client)}
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Empresa</p>
-              <p className="text-lg font-medium text-gray-800">{selectedLead.empresa}</p>
-            </div>
+            {selectedLead.address && (
+              <div>
+                <p className="text-sm text-gray-600">Dirección/URL</p>
+                <p className="text-sm font-medium text-gray-800 break-all">{selectedLead.address}</p>
+              </div>
+            )}
             <div>
               <p className="text-sm text-gray-600">IA Habilitada</p>
               <p className="text-lg font-medium text-gray-800">
-                {selectedLead.ia_habilitada ? 'Sí' : 'No'}
+                {selectedLead.ia_habilitada ? '✅ Sí' : '❌ No'}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Fecha de creación</p>
               <p className="text-lg font-medium text-gray-800">{selectedLead.fecha_creacion}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">ID</p>
+              <p className="text-sm font-mono text-gray-600">{selectedLead.rowid}</p>
             </div>
           </div>
         )}
