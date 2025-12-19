@@ -34,34 +34,29 @@ app.get('/health', (req, res) => {
 try {
   console.log('🔄 Cargando módulos...');
   
-  // // Autenticación (comentado temporalmente - requiere bcrypt)
-  // app.use('/auth', require('./modules/auth/routes/authRoutes'));
+  // Autenticación (activado)
+  app.use('/auth', require('./modules/auth/routes/authRoutes'));
+  console.log('✅ Módulo auth activado');
   
-  // Session Manager (comentado temporalmente - requiere venom-bot) 
-  // app.use('/session-manager', require('./modules/session-manager/routes/index'));
+  // Session Manager (activando)
+  app.use('/session-manager', require('./modules/session-manager/routes/index'));
+  console.log('✅ Módulo session-manager activado');
   
-  // Sender (comentado temporalmente - requiere dependencias)
-  // app.use('/sender', require('./modules/sender/routes/index'));
+  // Sender (activando)
+  app.use('/sender', require('./modules/sender/routes/index'));
+  console.log('✅ Módulo sender activado');
   
-  // // Listener (comentado temporalmente - requiere dependencias)  
-  // app.use('/listener', require('./modules/listener/routes/listenerRoutes'));
+  // Listener (activando)
+  app.use('/listener', require('./modules/listener/routes/listenerRoutes'));
+  console.log('✅ Módulo listener activado');
   
-  // Rutas de prueba para verificar estructura
-  app.get('/session-manager/status', (req, res) => {
-    res.json({ status: 'session-manager mock - ok', message: 'Módulo session-manager detectado' });
-  });
-  
-  app.get('/sender/status', (req, res) => {
-    res.json({ status: 'sender mock - ok', message: 'Módulo sender detectado' });
-  });
-  
-  app.get('/listener/status', (req, res) => {
-    res.json({ status: 'listener mock - ok', message: 'Módulo listener detectado' });
-  });
+  // Ya no necesitamos rutas mock - todos los módulos están activos
+  console.log('🎉 TODOS LOS MÓDULOS ACTIVADOS - SISTEMA LISTO PARA PRODUCCIÓN');
   
   console.log('✅ Endpoints de prueba configurados');
 } catch (error) {
   console.error('❌ Error integrando módulos:', error.message);
+  console.error('Stack:', error.stack);
 }
 
 const PORT = process.env.PORT || 3010;
