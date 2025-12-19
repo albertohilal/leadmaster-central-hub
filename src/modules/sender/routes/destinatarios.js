@@ -1,0 +1,15 @@
+const express = require('express');
+const router = express.Router();
+const destinatariosController = require('../controllers/destinatariosController');
+const { authenticate } = require('../../auth/middleware/authMiddleware');
+
+// Aplicar middleware de autenticación a todas las rutas
+router.use(authenticate);
+
+// Obtener destinatarios completos de una campaña
+router.get('/campania/:campaniaId', destinatariosController.getDestinatariosCampania);
+
+// Obtener solo resumen de destinatarios de una campaña
+router.get('/campania/:campaniaId/resumen', destinatariosController.getResumenDestinatarios);
+
+module.exports = router;

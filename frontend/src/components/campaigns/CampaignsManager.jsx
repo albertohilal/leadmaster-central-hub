@@ -4,6 +4,7 @@ import Button from '../common/Button';
 import LoadingSpinner from '../common/LoadingSpinner';
 import Modal from '../common/Modal';
 import { senderAPI, leadsAPI } from '../../services/api';
+import { destinatariosService } from '../../services/destinatarios';
 import { useAuth } from '../../contexts/AuthContext';
 import ProgramacionesForm from './ProgramacionesForm';
 import ProgramacionesList from './ProgramacionesList';
@@ -19,8 +20,12 @@ const CampaignsManager = () => {
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showRecipientsModal, setShowRecipientsModal] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [editingCampaign, setEditingCampaign] = useState(null);
+  const [destinatarios, setDestinatarios] = useState([]);
+  const [estadisticasDestinatarios, setEstadisticasDestinatarios] = useState({});
+  const [loadingDestinatarios, setLoadingDestinatarios] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -53,7 +58,14 @@ const CampaignsManager = () => {
           pendientes: 100,
           cliente_id: 51,
           cliente_nombre: 'Haby',
-          activa: true
+          activa: true,
+          destinatarios: [
+            { id: 1, nombre: 'Juan Pérez', telefono: '+54911234567', estado: 'pendiente', fecha_envio: null },
+            { id: 2, nombre: 'María García', telefono: '+54911234568', estado: 'pendiente', fecha_envio: null },
+            { id: 3, nombre: 'Carlos López', telefono: '+54911234569', estado: 'pendiente', fecha_envio: null },
+            { id: 4, nombre: 'Ana Martínez', telefono: '+54911234570', estado: 'pendiente', fecha_envio: null },
+            { id: 5, nombre: 'Luis Rodríguez', telefono: '+54911234571', estado: 'pendiente', fecha_envio: null }
+          ]
         },
         {
           id: 1,
@@ -89,7 +101,12 @@ const CampaignsManager = () => {
           pendientes: 50,
           cliente_id: 51,
           cliente_nombre: 'Haby',
-          activa: true
+          activa: true,
+          destinatarios: [
+            { id: 6, nombre: 'Pedro González', telefono: '+54911234572', estado: 'pendiente', fecha_envio: null },
+            { id: 7, nombre: 'Sofía Ramírez', telefono: '+54911234573', estado: 'pendiente', fecha_envio: null },
+            { id: 8, nombre: 'Diego Castro', telefono: '+54911234574', estado: 'pendiente', fecha_envio: null }
+          ]
         },
         {
           id: 3,
@@ -107,7 +124,19 @@ const CampaignsManager = () => {
           pendientes: 150,
           cliente_id: 51,
           cliente_nombre: 'Haby',
-          activa: true
+          activa: true,
+          destinatarios: [
+            { id: 11, nombre: 'Patricia Mendoza', telefono: '+54911234577', estado: 'pendiente', fecha_envio: null },
+            { id: 12, nombre: 'Fernando Jiménez', telefono: '+54911234578', estado: 'pendiente', fecha_envio: null },
+            { id: 13, nombre: 'Valeria Torres', telefono: '+54911234579', estado: 'pendiente', fecha_envio: null },
+            { id: 14, nombre: 'Gabriel Morales', telefono: '+54911234580', estado: 'pendiente', fecha_envio: null }
+          ],
+          destinatarios: [
+            { id: 11, nombre: 'Patricia Mendoza', telefono: '+54911234577', estado: 'pendiente', fecha_envio: null },
+            { id: 12, nombre: 'Fernando Jiménez', telefono: '+54911234578', estado: 'pendiente', fecha_envio: null },
+            { id: 13, nombre: 'Valeria Torres', telefono: '+54911234579', estado: 'pendiente', fecha_envio: null },
+            { id: 14, nombre: 'Gabriel Morales', telefono: '+54911234580', estado: 'pendiente', fecha_envio: null }
+          ]
         },
         {
           id: 4,
@@ -125,7 +154,19 @@ const CampaignsManager = () => {
           pendientes: 0,
           cliente_id: 51,
           cliente_nombre: 'Haby',
-          activa: false
+          activa: false,
+          destinatarios: [
+            { id: 15, nombre: 'Isabella Cruz', telefono: '+54911234581', estado: 'enviado', fecha_envio: '2025-12-05T14:30:15' },
+            { id: 16, nombre: 'Alejandro Vargas', telefono: '+54911234582', estado: 'enviado', fecha_envio: '2025-12-05T14:30:18' },
+            { id: 17, nombre: 'Carmen Delgado', telefono: '+54911234583', estado: 'enviado', fecha_envio: '2025-12-05T14:30:22' },
+            { id: 18, nombre: 'Ricardo Peña', telefono: '+54911234584', estado: 'enviado', fecha_envio: '2025-12-05T14:30:25' }
+          ],
+          destinatarios: [
+            { id: 15, nombre: 'Isabella Cruz', telefono: '+54911234581', estado: 'enviado', fecha_envio: '2025-12-05T14:30:15' },
+            { id: 16, nombre: 'Alejandro Vargas', telefono: '+54911234582', estado: 'enviado', fecha_envio: '2025-12-05T14:30:18' },
+            { id: 17, nombre: 'Carmen Delgado', telefono: '+54911234583', estado: 'enviado', fecha_envio: '2025-12-05T14:30:22' },
+            { id: 18, nombre: 'Ricardo Peña', telefono: '+54911234584', estado: 'enviado', fecha_envio: '2025-12-05T14:30:25' }
+          ]
         }
       ];
       
@@ -256,6 +297,51 @@ const CampaignsManager = () => {
     setSelectedCampaign(campaign);
     setShowDetailsModal(true);
     console.log('showDetailsModal establecido a:', true);
+  };
+
+  const handleViewRecipients = async (campaign) => {
+    console.log('Abriendo lista de destinatarios:', campaign);
+    setSelectedCampaign(campaign);
+    setLoadingDestinatarios(true);
+    setShowRecipientsModal(true);
+    
+    try {
+      // Intentar cargar destinatarios reales de la base de datos
+      const response = await destinatariosService.getDestinatariosCampania(campaign.id);
+      if (response.success) {
+        setDestinatarios(response.data.destinatarios);
+        setEstadisticasDestinatarios(response.data.estadisticas);
+        console.log('✅ Datos reales cargados:', response.data);
+      } else {
+        throw new Error('API respondió con error: ' + response.message);
+      }
+    } catch (error) {
+      console.warn('⚠️ Error al cargar destinatarios reales, usando datos mock:', error.message);
+      
+      // Datos mock para demostración mientras se implementa la API
+      const mockDestinatarios = [
+        {
+          id: 1,
+          nombre: "Bar de Prueba 1",
+          telefono: "+54 9 11 6308-3302",
+          estado: "enviado",
+          fecha_envio: "2025-12-02T14:27:43.000Z",
+          lugar_nombre: "Bar de Prueba 1"
+        }
+      ];
+      
+      const mockEstadisticas = {
+        total: mockDestinatarios.length,
+        enviados: mockDestinatarios.filter(d => d.estado === 'enviado').length,
+        pendientes: mockDestinatarios.filter(d => d.estado === 'pendiente').length,
+        fallidos: mockDestinatarios.filter(d => d.estado === 'fallido').length
+      };
+      
+      setDestinatarios(mockDestinatarios);
+      setEstadisticasDestinatarios(mockEstadisticas);
+    } finally {
+      setLoadingDestinatarios(false);
+    }
   };
 
   const handleSendCampaign = (campaign) => {
@@ -454,6 +540,9 @@ const CampaignsManager = () => {
                     </Button>
                     <Button variant="secondary" onClick={() => handleViewStats(campaign)}>
                       Ver Estadísticas
+                    </Button>
+                    <Button variant="info" onClick={() => handleViewRecipients(campaign)}>
+                      👥 Ver Destinatarios ({campaign.total_destinatarios || 0})
                     </Button>
                     
                     {/* Solo mostrar botón editar si la campaña no está completada */}
@@ -966,6 +1055,110 @@ const CampaignsManager = () => {
           </div>
         )}
       </Modal>
+
+      {/* Modal para ver destinatarios */}
+      {showRecipientsModal && selectedCampaign && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg max-w-4xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Destinatarios - {selectedCampaign.nombre}
+              </h2>
+              <button
+                onClick={() => setShowRecipientsModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <span className="text-2xl">×</span>
+              </button>
+            </div>
+
+            {loadingDestinatarios ? (
+              <div className="text-center py-8">
+                <LoadingSpinner size="large" text="Cargando destinatarios..." />
+              </div>
+            ) : destinatarios.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-6xl mb-4">📭</div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay destinatarios</h3>
+                <p className="text-gray-500">Esta campaña aún no tiene destinatarios asignados.</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-4 bg-green-100 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {estadisticasDestinatarios.enviados || 0}
+                      </div>
+                      <div className="text-sm text-green-700">Enviados</div>
+                    </div>
+                    <div className="text-center p-4 bg-yellow-100 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {estadisticasDestinatarios.pendientes || 0}
+                      </div>
+                      <div className="text-sm text-yellow-700">Pendientes</div>
+                    </div>
+                    <div className="text-center p-4 bg-red-100 rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">
+                        {estadisticasDestinatarios.fallidos || 0}
+                      </div>
+                      <div className="text-sm text-red-700">Fallidos</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 px-4 py-2 text-left">Nombre</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Teléfono</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Estado</th>
+                        <th className="border border-gray-300 px-4 py-2 text-left">Fecha Envío</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {destinatarios.map((destinatario, index) => (
+                        <tr key={destinatario.id || index} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 px-4 py-2">
+                            {destinatario.nombre}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            {destinatario.telefono}
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              destinatario.estado === 'enviado' 
+                                ? 'bg-green-100 text-green-800'
+                                : destinatario.estado === 'pendiente'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {destinatario.estado}
+                            </span>
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2">
+                            {destinatario.fecha_envio 
+                              ? new Date(destinatario.fecha_envio).toLocaleString('es-AR')
+                              : '-'
+                            }
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+
+            <div className="mt-6 text-center">
+              <Button variant="secondary" onClick={() => setShowRecipientsModal(false)}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

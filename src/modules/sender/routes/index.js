@@ -23,6 +23,8 @@ router.use('/campaigns', require('./campaigns'));
 router.use('/messages', require('./messages'));
 // Nueva ruta modular para leads/lugares (multi-cliente)
 router.use('/lugares', require('./lugares'));
+// Nueva ruta modular para destinatarios
+router.use('/destinatarios', require('./destinatarios'));
 
 // Rutas legacy
 router.use('/auth', require('./auth'));
