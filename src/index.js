@@ -15,12 +15,13 @@ app.get('/', (req, res) => {
     name: 'Leadmaster Central Hub',
     status: 'ok',
     version: '1.0.0',
-    modules: ['session-manager', 'sender', 'listener', 'auth'],
+    modules: ['session-manager', 'sender', 'listener', 'auth', 'sync-contacts'],
     endpoints: {
       'session-manager': '/session-manager/*',
       'sender': '/sender/*',
       'listener': '/listener/*',
-      'auth': '/auth/*'
+      'auth': '/auth/*',
+      'sync-contacts': '/sync-contacts/*'
     }
   });
 });
@@ -50,6 +51,14 @@ try {
   app.use('/listener', require('./modules/listener/routes/listenerRoutes'));
   console.log('✅ Módulo listener activado');
   
+  // Sync Contacts (Gmail integration)
+  app.use('/sync-contacts', require('./modules/sync-contacts/routes/index'));
+  console.log('✅ Módulo sync-contacts activado');
+  
+  // Iniciar cron job para sincronización automática
+  const syncCronJob = require('./modules/sync-contacts/cron/syncCronJob');
+  syncCronJob.start();
+  
   // Test module (comentado temporalmente)
   // app.use('/test', require('./modules/test/routes/testRoutes'));
   // console.log('✅ Módulo test activado');
@@ -73,4 +82,5 @@ app.listen(PORT, () => {
   console.log('   - GET /session-manager/* (gestión sesión WhatsApp)');
   console.log('   - GET /sender/* (envíos masivos)');
   console.log('   - GET /listener/* (respuestas automáticas)');
+  console.log('   - GET /sync-contacts/* (sincronización Gmail Contacts)');
 });
