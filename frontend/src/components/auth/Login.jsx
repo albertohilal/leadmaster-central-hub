@@ -107,6 +107,27 @@ const Login = () => {
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>LeadMaster Central Hub v1.0</p>
           <p className="mt-1">© {new Date().getFullYear()} Desarrollo y Diseño</p>
+          
+          {/* Ayuda de credenciales (solo desarrollo) */}
+          {import.meta.env.DEV && (
+            <details className="mt-4 text-left bg-gray-50 rounded-lg p-3">
+              <summary className="cursor-pointer text-xs font-medium text-gray-600 hover:text-gray-800">
+                🔧 Credenciales de prueba
+              </summary>
+              <div className="mt-2 space-y-2 text-xs text-gray-600">
+                <div className="bg-white p-2 rounded border border-gray-200">
+                  <p className="font-mono"><strong>Usuario:</strong> Haby</p>
+                  <p className="font-mono"><strong>Password:</strong> haby1973</p>
+                  <p className="text-gray-500 mt-1">Cliente Haby Supply (ID: 51)</p>
+                </div>
+                <div className="bg-white p-2 rounded border border-gray-200">
+                  <p className="font-mono"><strong>Usuario:</strong> b3toh</p>
+                  <p className="font-mono"><strong>Password:</strong> elgeneral2018</p>
+                  <p className="text-gray-500 mt-1">Admin (ID: 1)</p>
+                </div>
+              </div>
+            </details>
+          )}
         </div>
       </div>
     </div>

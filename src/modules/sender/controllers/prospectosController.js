@@ -41,11 +41,12 @@ const prospectosController = {
         LEFT JOIN ll_lugares_clientes lc ON lc.societe_id = s.rowid AND lc.cliente_id = ?
         LEFT JOIN ll_societe_extended se ON se.societe_id = s.rowid
         LEFT JOIN ll_rubros r ON se.rubro_id = r.id
-        LEFT JOIN ll_envios_whatsapp env ON env.lugar_id = s.rowid AND env.campania_id = ?
+        LEFT JOIN ll_envios_whatsapp env ON env.lugar_id = s.rowid${campania_id ? ' AND env.campania_id = ?' : ''}
         WHERE s.entity = 1
       `;
       
-      const params = [clienteId, campania_id];
+      const params = [clienteId];
+      if (campania_id) params.push(campania_id);
 
       // Filtro por números válidos de WhatsApp
       if (soloWappValido === 'true') {
@@ -100,12 +101,12 @@ const prospectosController = {
 
       res.json({
         success: true,
-        data: rows,
+        prospectos: rows,
         total: rows.length
       });
 
     } catch (error) {
-      console.error('Error al filtrar prospectos:', error);
+      console.error('❌ [prospectos] Error al filtrar prospectos:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor',
@@ -135,11 +136,11 @@ const prospectosController = {
 
       res.json({
         success: true,
-        data: areas
+        areas: areas
       });
 
     } catch (error) {
-      console.error('Error al obtener áreas:', error);
+      console.error('❌ [prospectos] Error al obtener áreas:', error);
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor'
@@ -151,22 +152,22 @@ const prospectosController = {
   async obtenerRubros(req, res) {
     try {
       const [rows] = await db.execute(`
-        SELECT id, nombre, descripcion
+        SELECT id, nombre, area, keyword_google
         FROM ll_rubros
-        WHERE activo = 1
         ORDER BY nombre ASC
       `);
 
       res.json({
         success: true,
-        data: rows
+        rubros: rows
       });
 
     } catch (error) {
-      console.error('Error al obtener rubros:', error);
+      console.error('❌ [prospectos] Error al obtener rubros:', error);
       res.status(500).json({
         success: false,
-        message: 'Error interno del servidor'
+        message: 'Error interno del servidor',
+        error: error.message
       });
     }
   },

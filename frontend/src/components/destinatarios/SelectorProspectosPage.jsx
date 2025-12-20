@@ -14,6 +14,7 @@ const SelectorProspectosPage = () => {
   const [prospectos, setProspectos] = useState([]);
   const [prospectosSeleccionados, setProspectosSeleccionados] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   
   // Estados para filtros
   const [areas, setAreas] = useState([]);
@@ -44,17 +45,34 @@ const SelectorProspectosPage = () => {
   const cargarDatosIniciales = async () => {
     try {
       setLoading(true);
+      setError(null);
       const [campanasData, areasData, rubrosData] = await Promise.all([
         campanasService.obtenerCampanas(),
         prospectosService.obtenerAreas(),
         prospectosService.obtenerRubros()
       ]);
       
-      setCampanas(campanasData || []);
-      setAreas(areasData.areas || []);
-      setRubros(rubrosData.rubros || []);
+      console.log('📊 Datos cargados:', { campanasData, areasData, rubrosData });
+      
+      // Asegurar que sean arrays
+      const campanasArray = Array.isArray(campanasData) ? campanasData : [];
+      const areasArray = Array.isArray(areasData?.areas) ? areasData.areas : [];
+      const rubrosArray = Array.isArray(rubrosData?.rubros) ? rubrosData.rubros : [];
+      
+      console.log('📊 Arrays procesados:', { campanasArray, areasArray, rubrosArray });
+      
+      setCampanas(campanasArray);
+      setAreas(areasArray);
+      setRubros(rubrosArray);
     } catch (error) {
-      console.error('Error al cargar datos iniciales:', error);
+      console.error('❌ Error al cargar datos iniciales:', error);
+      const errorMsg = error.response?.data?.message || error.message || 'Error al cargar datos';
+      setError(errorMsg);
+      
+      // Si es error de autenticación, mostrar mensaje específico
+      if (error.response?.status === 401) {
+        setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -183,14 +201,63 @@ const SelectorProspectosPage = () => {
                 value={campaniaSeleccionada}
                 onChange={(e) => setCampaniaSeleccionada(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={loading || campanas.length === 0}
               >
-                <option value="">Seleccionar campaña...</option>
+                <option value="">
+                  {loading ? 'Cargando campañas...' : 
+                   error ? 'Error al cargar campañas' :
+                   campanas.length === 0 ? 'No hay campañas disponibles' :
+                   'Seleccionar campaña...'}
+                </option>
                 {campanas.map((campana) => (
                   <option key={campana.id} value={campana.id}>
                     {campana.nombre}
                   </option>
                 ))}
               </select>
+              
+              {/* Mensaje de error */}
+              {error && (
+                <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600 font-medium mb-2">⚠️ {error}</p>
+                  {error.includes('Sesión expirada') || error.includes('Token') ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-red-600">
+                        Necesitas iniciar sesión para ver las campañas.
+                      </p>
+                      <button
+                        onClick={() => navigate('/login')}
+                        className="w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+                      >
+                        Ir a inicio de sesión
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={cargarDatosIniciales}
+                      className="mt-2 text-sm text-red-700 underline hover:text-red-800"
+                    >
+                      Reintentar
+                    </button>
+                  )}
+                </div>
+              )}
+              
+              {/* Ayuda cuando no hay campañas pero no hay error */}
+              {!error && !loading && campanas.length === 0 && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700 font-medium mb-2">ℹ️ No hay campañas disponibles</p>
+                  <p className="text-xs text-blue-600 mb-2">
+                    Primero debes crear una campaña desde el módulo de Campañas.
+                  </p>
+                  <button
+                    onClick={() => navigate('/campaigns')}
+                    className="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Ir a Campañas
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Buscador */}
@@ -233,8 +300,10 @@ const SelectorProspectosPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Todas las áreas</option>
-                  {areas.map((area) => (
-                    <option key={area} value={area}>{area}</option>
+                  {areas.map((area, index) => (
+                    <option key={area?.id || area?.nombre || index} value={area?.nombre || area}>
+                      {area?.nombre || area}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -250,8 +319,10 @@ const SelectorProspectosPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Todos los rubros</option>
-                  {rubros.map((rubro) => (
-                    <option key={rubro} value={rubro}>{rubro}</option>
+                  {rubros.map((rubro, index) => (
+                    <option key={rubro?.id || index} value={rubro?.nombre || rubro}>
+                      {rubro?.nombre || rubro}
+                    </option>
                   ))}
                 </select>
               </div>
