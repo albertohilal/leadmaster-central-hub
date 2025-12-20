@@ -4,14 +4,12 @@ const router = express.Router();
 const syncContactsController = require('../controllers/syncContactsController');
 const authMiddleware = require('../../auth/middleware/authMiddleware');
 
-// Rutas públicas (OAuth callback)
+// Rutas públicas (OAuth - no requieren JWT)
+router.get('/authorize/:cliente_id', syncContactsController.authorize.bind(syncContactsController));
 router.get('/callback', syncContactsController.callback.bind(syncContactsController));
 
 // Rutas protegidas (requieren autenticación)
 router.use(authMiddleware);
-
-// Autorizar acceso a Google Contacts
-router.get('/authorize/:cliente_id', syncContactsController.authorize.bind(syncContactsController));
 
 // Sincronizar contactos manualmente
 router.post('/sync/:cliente_id', syncContactsController.syncManual.bind(syncContactsController));
