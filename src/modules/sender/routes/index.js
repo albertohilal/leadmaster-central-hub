@@ -25,6 +25,8 @@ router.use('/messages', require('./messages'));
 router.use('/lugares', require('./lugares'));
 // Nueva ruta modular para destinatarios
 router.use('/destinatarios', require('./destinatarios'));
+// Nueva ruta modular para prospectos
+router.use('/prospectos', require('./prospectos'));
 
 // Rutas legacy
 router.use('/auth', require('./auth'));

@@ -35,6 +35,11 @@ const Sidebar = () => {
       label: 'Campañas' 
     },
     { 
+      path: '/prospectos', 
+      icon: '🎯', 
+      label: 'Seleccionar Prospectos' 
+    },
+    { 
       path: '/config', 
       icon: '⚙️', 
       label: 'Configuración' 

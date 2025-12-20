@@ -21,6 +21,32 @@ export const destinatariosService = {
       console.error('Error al obtener resumen de destinatarios:', error);
       throw error;
     }
+  },
+
+  // Agregar destinatarios a una campaña
+  async agregarDestinatarios(campaniaId, destinatarios) {
+    try {
+      const response = await apiService.post(`/sender/destinatarios/campania/${campaniaId}/agregar`, {
+        destinatarios
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error al agregar destinatarios:', error);
+      throw error;
+    }
+  },
+
+  // Quitar destinatarios de una campaña
+  async quitarDestinatarios(campaniaId, telefonos) {
+    try {
+      const response = await apiService.delete(`/sender/destinatarios/campania/${campaniaId}/quitar`, {
+        data: { telefonos }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error al quitar destinatarios:', error);
+      throw error;
+    }
   }
 };
 

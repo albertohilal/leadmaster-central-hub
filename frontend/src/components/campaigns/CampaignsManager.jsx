@@ -8,6 +8,7 @@ import { destinatariosService } from '../../services/destinatarios';
 import { useAuth } from '../../contexts/AuthContext';
 import ProgramacionesForm from './ProgramacionesForm';
 import ProgramacionesList from './ProgramacionesList';
+import GestorDestinatarios from '../admin/GestorDestinatarios';
 
 const CampaignsManager = () => {
   const { user } = useAuth();
@@ -1085,7 +1086,14 @@ const CampaignsManager = () => {
             ) : (
               <>
                 <div className="mb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <GestorDestinatarios 
+                    campaniaId={selectedCampaign?.id}
+                    onDestinatariosUpdated={() => {
+                      // Recargar destinatarios después de agregar/quitar
+                      handleViewRecipients(selectedCampaign);
+                    }}
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 mt-6">
                     <div className="text-center p-4 bg-green-100 rounded-lg">
                       <div className="text-2xl font-bold text-green-600">
                         {estadisticasDestinatarios.enviados || 0}

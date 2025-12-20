@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3011';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3013';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -104,6 +104,15 @@ export const leadsAPI = {
   getFiltered: (filters) => api.get('/sender/lugares/filter', { params: filters }),
   // Obtener estadísticas de leads por tipo
   getStats: () => api.get('/sender/lugares/stats'),
+  
+  // Prospectos - funcionalidad migrada de whatsapp-massive-sender-V2
+  getProspectos: (filters) => api.get('/sender/prospectos/filtrar', { params: filters }),
+  getAreas: () => api.get('/sender/prospectos/areas'),
+  getRubros: () => api.get('/sender/prospectos/rubros'),
+  getProspectosStats: (campaniaId) => api.get('/sender/prospectos/estadisticas', { 
+    params: { campania_id: campaniaId } 
+  }),
+  
   // Endpoints adicionales mantenidos para compatibilidad
   getById: (id) => api.get(`/leads/${id}`),
   search: (query) => api.get('/leads/search', { params: { q: query } }),

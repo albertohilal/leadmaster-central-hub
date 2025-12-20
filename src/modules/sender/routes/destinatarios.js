@@ -12,4 +12,10 @@ router.get('/campania/:campaniaId', destinatariosController.getDestinatariosCamp
 // Obtener solo resumen de destinatarios de una campaña
 router.get('/campania/:campaniaId/resumen', destinatariosController.getResumenDestinatarios);
 
+// Agregar destinatarios a una campaña
+router.post('/campania/:campaniaId/agregar', destinatariosController.agregarDestinatarios);
+
+// Quitar destinatarios de una campaña
+router.delete('/campania/:campaniaId/quitar', destinatariosController.quitarDestinatarios);
+
 module.exports = router;

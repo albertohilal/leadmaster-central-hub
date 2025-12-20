@@ -13,24 +13,36 @@ const db = require('../../../config/db');
  */
 exports.list = async (req, res) => {
   try {
+    console.log('🔍 [campaigns] Starting list request for client:', req.user.cliente_id);
     const clienteId = req.user.cliente_id;
     
     const query = `
       SELECT 
-        id, nombre, descripcion, mensaje, estado, fecha_creacion,
-        programada, fecha_envio
+        id, nombre, mensaje, fecha_creacion, estado, cliente_id
       FROM ll_campanias_whatsapp 
       WHERE cliente_id = ?
       ORDER BY fecha_creacion DESC
     `;
     
+    console.log('🔍 [campaigns] Executing query...');
     const [rows] = await db.execute(query, [clienteId]);
-    res.json(rows);
+    console.log('🔍 [campaigns] Query result count:', rows.length);
+    
+    // Agregar campos compatibles con el frontend
+    const campanias = rows.map(campania => ({
+      ...campania,
+      descripcion: '', // Campo para compatibilidad frontend
+      programada: false,
+      fecha_envio: null
+    }));
+    
+    console.log('✅ [campaigns] Sending response...');
+    res.json(campanias);
   } catch (error) {
-    console.error('Error al listar campañas:', error);
+    console.error('❌ [campaigns] Error al listar campañas:', error);
     res.status(500).json({ 
       success: false, 
-      error: 'Error interno del servidor' 
+      error: 'Error interno del servidor'
     });
   }
 };
@@ -46,8 +58,7 @@ exports.detail = async (req, res) => {
     
     const query = `
       SELECT 
-        id, nombre, descripcion, mensaje, estado, fecha_creacion,
-        programada, fecha_envio, cliente_id
+        id, nombre, mensaje, fecha_creacion, estado, cliente_id
       FROM ll_campanias_whatsapp 
       WHERE id = ? AND cliente_id = ?
     `;
@@ -61,15 +72,21 @@ exports.detail = async (req, res) => {
       });
     }
     
-    res.json({
-      success: true,
-      data: rows[0]
-    });
+    // Agregar campos para compatibilidad con frontend
+    const campania = {
+      ...rows[0],
+      descripcion: '',
+      programada: false,
+      fecha_envio: null
+    };
+    
+    res.json(campania);
   } catch (error) {
     console.error('Error al obtener detalle de campaña:', error);
     res.status(500).json({ 
       success: false, 
-      error: 'Error interno del servidor' 
+      error: 'Error interno del servidor',
+      details: error.message 
     });
   }
 };
@@ -87,7 +104,7 @@ exports.detail = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, mensaje, programada, fecha_envio } = req.body;
+    const { nombre, mensaje } = req.body;
     const clienteId = req.user.cliente_id;
     const esAdmin = req.user.tipo === 'admin';
     
