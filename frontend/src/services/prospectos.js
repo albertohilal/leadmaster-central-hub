@@ -10,7 +10,7 @@ export const prospectosService = {
       if (filtros.rubro) queryParams.append('rubro', filtros.rubro);
       if (filtros.direccion) queryParams.append('direccion', filtros.direccion);
       if (filtros.estado) queryParams.append('estado', filtros.estado);
-      if (filtros.tipo_cliente) queryParams.append('tipo_cliente', filtros.tipo_cliente);
+      if (filtros.tipo_cliente) queryParams.append('tipoCliente', filtros.tipo_cliente);
       if (filtros.limite) queryParams.append('limite', filtros.limite);
       
       const url = `/sender/prospectos/filtrar${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;

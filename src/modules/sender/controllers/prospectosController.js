@@ -22,9 +22,11 @@ const prospectosController = {
           s.rowid as id,
           s.nom as nombre,
           s.phone_mobile as telefono_wapp,
+          s.email as email,
           s.address as direccion,
           s.town as ciudad,
           COALESCE(r.nombre, 'Sin rubro') as rubro,
+          r.area as area_rubro,
           lc.cliente_id,
           CASE 
             WHEN env.id IS NOT NULL THEN env.estado
@@ -38,11 +40,12 @@ const prospectosController = {
           s.client as es_cliente,
           s.fournisseur as es_proveedor
         FROM llxbx_societe s
-        LEFT JOIN ll_lugares_clientes lc ON lc.societe_id = s.rowid AND lc.cliente_id = ?
+        LEFT JOIN ll_lugares_clientes lc ON lc.societe_id = s.rowid
         LEFT JOIN ll_societe_extended se ON se.societe_id = s.rowid
         LEFT JOIN ll_rubros r ON se.rubro_id = r.id
         LEFT JOIN ll_envios_whatsapp env ON env.lugar_id = s.rowid${campania_id ? ' AND env.campania_id = ?' : ''}
         WHERE s.entity = 1
+          AND lc.cliente_id = ?
       `;
       
       const params = [clienteId];
@@ -54,7 +57,11 @@ const prospectosController = {
       }
 
       // Filtro por estado
-      if (estado === 'sin_envio') {
+      // Si hay campaña seleccionada, excluir contactos ya enviados o pendientes para ESA campaña
+      if (campania_id && estado === 'sin_envio') {
+        sql += ` AND env.id IS NULL`;
+      } else if (!campania_id && estado === 'sin_envio') {
+        // Sin campaña seleccionada, mostrar solo sin envío en ninguna campaña
         sql += ` AND env.id IS NULL`;
       } else if (estado === 'enviado') {
         sql += ` AND env.estado = 'enviado'`;
@@ -92,12 +99,20 @@ const prospectosController = {
       sql += ` ORDER BY s.nom ASC LIMIT 1000`;
 
       console.log('🔍 [prospectos] Ejecutando query con filtros:', { 
-        campania_id, area, rubro, direccion, estado, tipoCliente, soloWappValido 
+        clienteId, campania_id, area, rubro, direccion, estado, tipoCliente, soloWappValido 
       });
+      console.log('🔍 [prospectos] SQL:', sql);
+      console.log('🔍 [prospectos] Params:', params);
 
       const [rows] = await db.execute(sql, params);
 
       console.log(`✅ [prospectos] Encontrados ${rows.length} prospectos`);
+      if (rows.length > 0) {
+        console.log('🔍 [prospectos] Primer registro completo:', JSON.stringify(rows[0], null, 2));
+        console.log('🔍 [prospectos] area_rubro del primer registro:', rows[0].area_rubro);
+        console.log('🔍 [prospectos] Rubros únicos:', [...new Set(rows.map(r => r.rubro))]);
+        console.log('🔍 [prospectos] Áreas únicas:', [...new Set(rows.map(r => r.area_rubro))].filter(Boolean));
+      }
 
       res.json({
         success: true,

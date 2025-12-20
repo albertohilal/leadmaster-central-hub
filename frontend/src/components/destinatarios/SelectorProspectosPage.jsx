@@ -89,6 +89,11 @@ const SelectorProspectosPage = () => {
       };
       
       const response = await prospectosService.filtrarProspectos(filtrosConBusqueda);
+      console.log('📊 Prospectos recibidos:', response.prospectos?.length);
+      if (response.prospectos?.length > 0) {
+        console.log('📊 Primer prospecto:', response.prospectos[0]);
+        console.log('📊 area_rubro del primero:', response.prospectos[0].area_rubro);
+      }
       setProspectos(response.prospectos || []);
     } catch (error) {
       console.error('Error al cargar prospectos:', error);
@@ -107,9 +112,9 @@ const SelectorProspectosPage = () => {
 
   const handleSeleccionarProspecto = (prospecto) => {
     setProspectosSeleccionados(prev => {
-      const yaSeleccionado = prev.find(p => p.rowid === prospecto.rowid);
+      const yaSeleccionado = prev.find(p => p.id === prospecto.id);
       if (yaSeleccionado) {
-        return prev.filter(p => p.rowid !== prospecto.rowid);
+        return prev.filter(p => p.id !== prospecto.id);
       } else {
         return [...prev, prospecto];
       }
@@ -354,9 +359,9 @@ const SelectorProspectosPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Todos los tipos</option>
-                  <option value="prospecto">Prospecto</option>
-                  <option value="cliente">Cliente</option>
-                  <option value="proveedor">Proveedor</option>
+                  <option value="prospectos">Solo Prospectos</option>
+                  <option value="clientes">Clientes Originales</option>
+                  <option value="ambos">Clientes y Proveedores</option>
                 </select>
               </div>
 
@@ -436,9 +441,6 @@ const SelectorProspectosPage = () => {
                       Teléfono/WhatsApp
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Dirección
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -449,22 +451,22 @@ const SelectorProspectosPage = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
                         Cargando prospectos...
                       </td>
                     </tr>
                   ) : prospectos.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
                         No se encontraron prospectos con los filtros seleccionados
                       </td>
                     </tr>
                   ) : (
                     prospectos.map((prospecto) => {
-                      const estaSeleccionado = prospectosSeleccionados.find(p => p.rowid === prospecto.rowid);
+                      const estaSeleccionado = prospectosSeleccionados.find(p => p.id === prospecto.id);
                       return (
                         <tr
-                          key={prospecto.rowid}
+                          key={prospecto.id}
                           className={`hover:bg-gray-50 cursor-pointer ${estaSeleccionado ? 'bg-blue-50' : ''}`}
                           onClick={() => handleSeleccionarProspecto(prospecto)}
                         >
@@ -480,36 +482,36 @@ const SelectorProspectosPage = () => {
                             <div className="flex items-center">
                               <Building className="h-4 w-4 text-gray-400 mr-2" />
                               <div>
-                                <div className="text-sm font-medium text-gray-900">{prospecto.nom}</div>
-                                {prospecto.name_alias && (
-                                  <div className="text-sm text-gray-500">{prospecto.name_alias}</div>
+                                <div className="text-sm font-medium text-gray-900">{prospecto.nombre || '-'}</div>
+                                {prospecto.rubro && (
+                                  <div className="text-sm text-gray-500">
+                                    {prospecto.rubro}
+                                    {prospecto.area_rubro && <span className="ml-1 text-xs text-blue-600">({prospecto.area_rubro})</span>}
+                                  </div>
                                 )}
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {prospecto.whatsapp && (
+                              {prospecto.telefono_wapp ? (
                                 <div className="flex items-center text-green-600">
                                   <span className="mr-1">📱</span>
-                                  {prospecto.whatsapp}
+                                  {prospecto.telefono_wapp}
                                 </div>
-                              )}
-                              {prospecto.phone && (
-                                <div className="text-gray-600">
-                                  📞 {prospecto.phone}
-                                </div>
+                              ) : (
+                                <span className="text-gray-400">-</span>
                               )}
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {prospecto.email || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center text-sm text-gray-900">
                               <MapPin className="h-4 w-4 text-gray-400 mr-1" />
-                              {prospecto.address ? (
-                                <span>{prospecto.address}</span>
+                              {prospecto.direccion ? (
+                                <div>
+                                  <div>{prospecto.direccion}</div>
+                                  {prospecto.ciudad && <div className="text-xs text-gray-500">{prospecto.ciudad}</div>}
+                                </div>
                               ) : (
                                 <span className="text-gray-500">-</span>
                               )}
@@ -517,11 +519,15 @@ const SelectorProspectosPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              prospecto.status === '1' 
+                              prospecto.estado === 'disponible' 
                                 ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
+                                : prospecto.estado === 'enviado'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-yellow-100 text-yellow-800'
                             }`}>
-                              {prospecto.status === '1' ? 'Activo' : 'Inactivo'}
+                              {prospecto.estado === 'disponible' ? 'Disponible' : 
+                               prospecto.estado === 'enviado' ? 'Enviado' : 
+                               prospecto.estado || 'Pendiente'}
                             </span>
                           </td>
                         </tr>
