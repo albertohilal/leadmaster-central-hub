@@ -29,10 +29,11 @@ Esta guía proporciona instrucciones detalladas para hacer deployment del sistem
 
 ### Módulos del Sistema
 
-- **Session Manager**: Administra conexiones WhatsApp
+- **Session Manager**: Administra conexiones WhatsApp (fuente única de verdad)
 - **Auth**: Autenticación JWT multi-cliente
-- **Sender**: Envío de mensajes masivos
-- **Listener**: Respuestas automáticas
+- **Sender**: Envío de mensajes masivos (consume session-manager)
+- **Listener**: Respuestas automáticas (consume session-manager)
+- **Sync-Contacts**: Sincronización Gmail Contacts (nuevo - diciembre 2025)
 - **Leads**: Gestión de leads
 - **Campaigns**: Gestión de campañas
 
@@ -58,10 +59,14 @@ sudo apt install git curl wget nginx pm2 -g
 ```
 
 ### Puertos Necesarios
-- **3011**: Backend API
+- **3012**: Backend API (cambiado desde 3011)
 - **5174**: Frontend (desarrollo)
 - **80/443**: Nginx (producción)
 - **3306**: MySQL
+
+### APIs Externas Requeridas
+- **Google People API**: Para sincronización de contactos Gmail
+- **Google OAuth 2.0**: Para autorización de clientes
 
 ## 🚀 Instalación
 
@@ -86,12 +91,15 @@ GRANT ALL PRIVILEGES ON leadmaster_db.* TO 'leadmaster_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
-
-### 3. Importar Esquema
-
-```bash
 # Importar tablas base
 mysql -u leadmaster_user -p leadmaster_db < AUXILIAR/ll_tables.sql
+mysql -u leadmaster_user -p leadmaster_db < AUXILIAR/ll_whatsapp_sessions.sql
+
+# Importar tablas de sincronización de contactos (nuevo módulo)
+mysql -u leadmaster_user -p leadmaster_db < sql/ll_sync_contactos_schema.sql
+
+# Si tienes datos de ejemplo
+mysql -u leadmaster_user -p leadmaster_db < AUXILIAR/iunaorg_dyd.sql
 mysql -u leadmaster_user -p leadmaster_db < AUXILIAR/ll_whatsapp_sessions.sql
 
 # Si tienes datos de ejemplo
@@ -119,12 +127,17 @@ DB_PORT=3306
 # JWT
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 
-# WhatsApp
-WHATSAPP_SESSION_PATH=./tokens
-
 # Servidor
-PORT=3011
+PORT=3012
 NODE_ENV=production
+
+# Logging
+LOG_LEVEL=info
+
+# Google OAuth (Sync Contacts)
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=https://your-domain.com/sync-contacts/callbackction
 
 # Logging
 LOG_LEVEL=info
@@ -146,17 +159,9 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 # /etc/nginx/sites-available/leadmaster
 server {
     listen 80;
-    server_name your-domain.com;
-
-    # Frontend estático
-    location / {
-        root /var/www/leadmaster/frontend/dist;
-        try_files $uri $uri/ /index.html;
-    }
-
     # Backend API
     location /api/ {
-        proxy_pass http://localhost:3011/;
+        proxy_pass http://localhost:3012/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -167,9 +172,27 @@ server {
         proxy_cache_bypass $http_upgrade;
     }
 
+    # Sync Contacts (Google OAuth callback)
+    location /sync-contacts/ {
+        proxy_pass http://localhost:3012/sync-contacts/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # WebSocket para WhatsApp
     location /ws/ {
-        proxy_pass http://localhost:3011;
+        proxy_pass http://localhost:3012;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }   proxy_pass http://localhost:3011;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -238,24 +261,30 @@ sudo cp -r dist/* /var/www/leadmaster/frontend/
 ### Opción 3: Deployment con Docker
 
 ```bash
-# Construir imagen
-docker build -t leadmaster-backend .
-
-# Ejecutar con docker-compose
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-```
-
-## ✅ Verificación
-
-### 1. Verificar Servicios
-
-```bash
 # Backend health check
-curl http://localhost:3011/health
+curl http://localhost:3012/health
 # Respuesta esperada: {"status":"healthy","timestamp":"..."}
+
+# Verificar API de campañas
+curl http://localhost:3012/api/campaigns
+# Debe retornar array de campañas
+
+# Verificar módulo sync-contacts
+curl http://localhost:3012/sync-contacts/status/51
+# Debe retornar estado de sincronización para cliente_id 51
+
+# Frontend
+curl http://localhost:5174
+# Debe retornar HTML de la aplicación
+```bash
+mysql -u leadmaster_user -p -e "
+USE leadmaster_db;
+SHOW TABLES;
+SELECT COUNT(*) as campaign_count FROM ll_campanias_whatsapp;
+SELECT COUNT(*) as sync_config FROM ll_sync_contactos_config;
+SELECT COUNT(*) as google_tokens FROM ll_cliente_google_tokens;
+"
+```espuesta esperada: {"status":"healthy","timestamp":"..."}
 
 # Verificar API de campañas
 curl http://localhost:3011/api/campaigns
@@ -406,9 +435,25 @@ mysql -u leadmaster_user -p leadmaster_db -e "SHOW TABLES"
 ```
 
 **Soluciones:**
-- Verificar que MySQL esté ejecutándose
-- Verificar credenciales
-- Importar esquema si es necesario
+- Verificar permisos del directorio tokens/
+- Escanear código QR nuevamente
+- Verificar conexión a internet
+
+#### 5. Google OAuth falla
+
+```bash
+# Verificar variables de entorno
+grep GOOGLE_ .env
+
+# Verificar logs
+grep "sync-contacts" /var/log/leadmaster/backend.log
+```
+
+**Soluciones:**
+- Verificar GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en `.env`
+- Verificar que GOOGLE_REDIRECT_URI coincida exactamente con Google Cloud Console
+- Verificar que People API esté habilitada en Google Cloud
+- Regenerar credenciales OAuth si es necesariorio
 
 #### 4. WhatsApp no conecta
 
@@ -455,12 +500,17 @@ Para soporte adicional:
 
 1. **Logs**: Siempre incluir logs relevantes
 2. **Configuración**: Verificar archivos `.env` y configuración
-3. **Entorno**: Especificar SO, versiones de Node.js, MySQL
-4. **Pasos**: Detallar pasos para reproducir el problema
+# Servidor
+PORT=3012
+NODE_ENV=development
 
----
+# Logging
+LOG_LEVEL=info
 
-## 📄 Archivos de Configuración de Referencia
+# Google OAuth - Sincronización Gmail Contacts
+GOOGLE_CLIENT_ID=CHANGE_THIS_CLIENT_ID
+GOOGLE_CLIENT_SECRET=CHANGE_THIS_CLIENT_SECRET
+GOOGLE_REDIRECT_URI=http://localhost:3012/sync-contacts/callback de Configuración de Referencia
 
 ### .env.example
 ```bash
@@ -475,10 +525,85 @@ DB_PORT=3306
 JWT_SECRET=CHANGE_THIS_JWT_SECRET_IN_PRODUCTION
 
 # WhatsApp
-WHATSAPP_SESSION_PATH=./tokens
+---
 
-# Servidor
-PORT=3011
+## 🆕 Nuevo Módulo: Sync-Contacts (Diciembre 2025)
+
+### Configuración Requerida
+
+1. **Habilitar Google People API** en Google Cloud Console
+2. **Crear credenciales OAuth 2.0** (tipo: Aplicación Web)
+3. **Configurar URIs de redirección**:
+   - Desarrollo: `http://localhost:3012/sync-contacts/callback`
+   - Producción: `https://your-domain.com/sync-contacts/callback`
+
+### Variables de Entorno Adicionales
+
+```bash
+GOOGLE_CLIENT_ID=920029800348-xxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxxxxx
+GOOGLE_REDIRECT_URI=https://desarrolloydisenioweb.com.ar/sync-contacts/callback
+```
+
+### Tablas de Base de Datos Nuevas
+
+- `ll_sync_contactos_log` - Auditoría de sincronizaciones
+- `ll_cliente_google_tokens` - Tokens OAuth por cliente
+- `ll_sync_contactos_mapping` - Mapeo BD ↔ Google
+- `ll_sync_contactos_config` - Configuración por cliente
+
+### Endpoints Nuevos
+
+- `GET /sync-contacts/authorize/:clienteId` - Iniciar OAuth
+- `GET /sync-contacts/callback` - Callback OAuth (no protegido)
+- `POST /sync-contacts/sync/:clienteId` - Sincronización manual
+- `GET /sync-contacts/status/:clienteId` - Estado de sync
+- `GET /sync-contacts/log/:clienteId` - Historial
+- `GET /sync-contacts/config/:clienteId` - Ver configuración
+- `PUT /sync-contacts/config/:clienteId` - Actualizar config
+- `DELETE /sync-contacts/revoke/:clienteId` - Revocar acceso
+
+### Cron Job Automático
+
+El sistema sincroniza automáticamente cada hora (configurable por cliente).  
+Verificar en logs: `"🔄 Cron job de sincronización de contactos iniciado"`
+
+### Testing del Módulo
+
+```bash
+# 1. Autorizar cliente
+curl https://your-domain.com/sync-contacts/authorize/51
+
+# 2. Verificar tokens guardados
+mysql -u leadmaster_user -p -e "
+SELECT cliente_id, activo, fecha_autorizacion 
+FROM ll_cliente_google_tokens WHERE cliente_id=51"
+
+# 3. Ejecutar sincronización manual
+curl -X POST https://your-domain.com/sync-contacts/sync/51 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# 4. Ver estadísticas
+curl https://your-domain.com/sync-contacts/status/51 \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Troubleshooting Sync-Contacts
+
+**Error: "redirect_uri_mismatch"**
+- Verificar que URI en `.env` coincida exactamente con Google Cloud Console
+
+**Error: "Invalid credentials"**
+- Regenerar Client Secret en Google Cloud Console
+
+**Contactos no sincronizados**
+- Verificar que cliente tenga `activo=1` en `ll_sync_contactos_config`
+- Verificar que contactos tengan `phone_mobile` no vacío
+
+---
+
+**Última actualización**: 2025-12-20  
+**Versión del documento**: 2.0
 NODE_ENV=development
 
 # Logging
