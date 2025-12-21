@@ -1,6 +1,7 @@
 // contexts/AuthContext.jsx - Context para autenticación global
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { buildApiUrl } from '../config/api';
 
 const AuthContext = createContext(null);
 
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/verify`,
+          buildApiUrl('/auth/verify'),
           {},
           {
             headers: { Authorization: `Bearer ${token}` }
@@ -65,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (usuario, password) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/login`,
+        buildApiUrl('/auth/login'),
         { usuario, password }
       );
 
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`);
+      await axios.post(buildApiUrl('/auth/logout'));
     } catch (error) {
       console.error('Error en logout:', error);
     } finally {
@@ -102,7 +103,7 @@ export const AuthProvider = ({ children }) => {
   const changePassword = async (oldPassword, newPassword) => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/change-password`,
+        buildApiUrl('/auth/change-password'),
         { oldPassword, newPassword }
       );
 

@@ -104,12 +104,18 @@ npm run preview
 
 ## 🔌 Configuración de API
 
-El frontend se conecta al backend en `http://localhost:3010` por defecto.
+El frontend se conecta al backend en `http://localhost:3012` por defecto.
 
-Para cambiar la URL, edita el archivo `.env`:
+Para builds en servidores HTTPS crea un `.env.production` para evitar contenido mixto:
 
 ```env
-VITE_API_URL=http://localhost:3010
+VITE_API_URL=https://desarrolloydisenioweb.com.ar/api
+```
+
+En desarrollo, ajusta el archivo `.env`:
+
+```env
+VITE_API_URL=http://localhost:3012
 ```
 
 ## 📡 API Endpoints Consumidos
@@ -193,7 +199,7 @@ El sistema actualiza automáticamente:
 
 ## 🤝 Integración con Backend
 
-El frontend espera que el backend esté corriendo en `http://localhost:3010` y responda a los endpoints documentados.
+El frontend espera que el backend esté corriendo en `http://localhost:3012` y responda a los endpoints documentados.
 
 Para desarrollo, asegúrate de:
 1. Tener el backend corriendo
