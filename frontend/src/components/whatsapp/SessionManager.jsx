@@ -4,6 +4,7 @@ import Button from '../common/Button';
 import LoadingSpinner from '../common/LoadingSpinner';
 import Modal from '../common/Modal';
 import { sessionAPI } from '../../services/api';
+import { buildApiUrl } from '../../config/api';
 
 const SessionManager = () => {
   const [loading, setLoading] = useState(true);
@@ -48,9 +49,8 @@ const SessionManager = () => {
 
   const loadQRCode = async () => {
     try {
-      // Cargar QR como imagen desde el endpoint
-      const token = localStorage.getItem('token');
-      const qrUrl = `http://localhost:3010/session-manager/qr?t=${Date.now()}`;
+      // Cargar QR como imagen desde el endpoint usando la URL base correcta
+      const qrUrl = buildApiUrl(`/session-manager/qr?t=${Date.now()}`);
       setQrCode(qrUrl);
       setShowQRModal(true);
     } catch (error) {
