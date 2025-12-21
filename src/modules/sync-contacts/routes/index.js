@@ -9,7 +9,7 @@ router.get('/authorize/:cliente_id', syncContactsController.authorize.bind(syncC
 router.get('/callback', syncContactsController.callback.bind(syncContactsController));
 
 // Rutas protegidas (requieren autenticación)
-router.use(authMiddleware);
+router.use(authMiddleware.authenticate);
 
 // Sincronizar contactos manualmente
 router.post('/sync/:cliente_id', syncContactsController.syncManual.bind(syncContactsController));
