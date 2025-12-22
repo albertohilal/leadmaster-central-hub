@@ -75,14 +75,10 @@ function getOrCreateClient(clienteId, sessionName = null) {
       sessionName: name
     });
     
-    const userDataDir = path.join(process.env.HOME || '/home/beto', '.leadmaster-chrome-profiles', name);
-    try {
-      fs.mkdirSync(userDataDir, { recursive: true });
-    } catch {}
     venom
       .create({
         session: name,
-        headless: false, // TEMPORAL: headless causa que no genere QR
+        headless: false,
         useChrome: true,
         executablePath: '/usr/bin/google-chrome-stable',
         disableSpins: true,
@@ -91,22 +87,13 @@ function getOrCreateClient(clienteId, sessionName = null) {
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
-          '--disable-gpu',
-          `--user-data-dir=${userDataDir}`,
-          '--remote-debugging-port=0',
-          '--disable-extensions',
-          '--disable-features=Translate,OptimizationHints',
-          '--start-maximized',
-          '--window-position=0,0'
+          '--disable-gpu'
         ],
         puppeteerOptions: {
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            `--user-data-dir=${userDataDir}`
-          ],
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
           headless: false
         },
         catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
