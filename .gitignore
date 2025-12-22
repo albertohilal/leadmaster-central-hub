@@ -49,6 +49,9 @@ coverage/
 *.db
 *.bak
 
+# Carpeta auxiliar con archivos de trabajo
+AUXILIAR/
+
 # Ignore output
 *.out
 

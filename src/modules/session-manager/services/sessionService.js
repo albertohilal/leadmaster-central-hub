@@ -79,7 +79,7 @@ function getOrCreateClient(clienteId, sessionName = null) {
     venom
       .create({
         session: name,
-        headless: false,
+        headless: 'new',
         useChrome: true,
         executablePath: '/usr/bin/google-chrome-stable',
         disableSpins: true,
@@ -102,7 +102,7 @@ function getOrCreateClient(clienteId, sessionName = null) {
             '--disable-setuid-sandbox',
             `--user-data-dir=${userDataDir}`
           ],
-          headless: false
+          headless: 'new'
         },
         catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
           const sess = clientSessions.get(clienteId);
