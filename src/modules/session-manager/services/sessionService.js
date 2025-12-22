@@ -93,7 +93,6 @@ function getOrCreateClient(clienteId, sessionName = null) {
           '--disable-gpu',
           '--display=:99'
         ],
-        ],
         puppeteerOptions: {
           args: ['--no-sandbox', '--disable-setuid-sandbox'],
           headless: false
