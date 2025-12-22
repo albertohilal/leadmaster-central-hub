@@ -8,41 +8,44 @@ const clientSessions = new Map();
 
 /**
  * Cargar sesiones existentes del disco al iniciar
+ * DESHABILITADO: Causa problemas de "Disconnected by cell phone"
  */
 function loadExistingSessions() {
-  const tokensPath = path.join(__dirname, '../../../tokens');
+  console.log('📁 [session-manager] Reconexión automática DESHABILITADA');
+  console.log('💡 [session-manager] Usa el botón "Conectar WhatsApp" para iniciar sesiones');
+  // const tokensPath = path.join(__dirname, '../../../tokens');
   
-  try {
-    if (!fs.existsSync(tokensPath)) {
-      console.log('📁 [session-manager] No hay sesiones previas');
-      return;
-    }
+  // try {
+  //   if (!fs.existsSync(tokensPath)) {
+  //     console.log('📁 [session-manager] No hay sesiones previas');
+  //     return;
+  //   }
 
-    const folders = fs.readdirSync(tokensPath);
-    const clientFolders = folders.filter(f => f.startsWith('client_'));
+  //   const folders = fs.readdirSync(tokensPath);
+  //   const clientFolders = folders.filter(f => f.startsWith('client_'));
     
-    if (clientFolders.length === 0) {
-      console.log('📁 [session-manager] No hay sesiones de clientes guardadas');
-      return;
-    }
+  //   if (clientFolders.length === 0) {
+  //     console.log('📁 [session-manager] No hay sesiones de clientes guardadas');
+  //     return;
+  //   }
 
-    console.log(`📁 [session-manager] Encontradas ${clientFolders.length} sesiones guardadas`);
+  //   console.log(`📁 [session-manager] Encontradas ${clientFolders.length} sesiones guardadas`);
     
-    clientFolders.forEach(folder => {
-      const match = folder.match(/client_(\d+)/);
-      if (match) {
-        const clienteId = parseInt(match[1]);
-        console.log(`🔄 [session-manager] Reconectando cliente ${clienteId}...`);
+  //   clientFolders.forEach(folder => {
+  //     const match = folder.match(/client_(\d+)/);
+  //     if (match) {
+  //       const clienteId = parseInt(match[1]);
+  //       console.log(`🔄 [session-manager] Reconectando cliente ${clienteId}...`);
         
-        // Inicializar sesión sin esperar (async)
-        setTimeout(() => {
-          getOrCreateClient(clienteId, folder);
-        }, 2000); // Esperar 2 segundos entre cada reconexión
-      }
-    });
-  } catch (error) {
-    console.error('❌ [session-manager] Error cargando sesiones:', error.message);
-  }
+  //       // Inicializar sesión sin esperar (async)
+  //       setTimeout(() => {
+  //         getOrCreateClient(clienteId, folder);
+  //       }, 2000); // Esperar 2 segundos entre cada reconexión
+  //     }
+  //   });
+  // } catch (error) {
+  //   console.error('❌ [session-manager] Error cargando sesiones:', error.message);
+  // }
 }
 
 /**
