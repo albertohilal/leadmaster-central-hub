@@ -220,10 +220,41 @@ async function disconnect(clienteId) {
   
   try {
     if (session && session.client) {
-      await session.client.close();
-      console.log(`🔴 [session-manager] Cliente ${clienteId} desconectado`);
+      console.log(`🔴 [session-manager] Desconectando cliente ${clienteId}...`);
+      
+      // Intentar cerrar el cliente de venom-bot
+      try {
+        await session.client.logout();
+        console.log(`✅ [session-manager] Logout ejecutado para cliente ${clienteId}`);
+      } catch (logoutError) {
+        console.warn(`⚠️ [session-manager] Error en logout, intentando close...`);
+      }
+      
+      try {
+        await session.client.close();
+        console.log(`✅ [session-manager] Cliente ${clienteId} cerrado`);
+      } catch (closeError) {
+        console.warn(`⚠️ [session-manager] Error cerrando cliente: ${closeError.message}`);
+      }
+      
+      // Eliminar tokens guardados
+      const sessionName = session.sessionName || `client_${clienteId}`;
+      const tokensPath = path.join(__dirname, '../../../tokens', sessionName);
+      
+      if (fs.existsSync(tokensPath)) {
+        try {
+          fs.rmSync(tokensPath, { recursive: true, force: true });
+          console.log(`🗑️ [session-manager] Tokens eliminados para cliente ${clienteId}`);
+        } catch (fsError) {
+          console.warn(`⚠️ [session-manager] Error eliminando tokens: ${fsError.message}`);
+        }
+      }
     }
+    
+    // Eliminar de memoria
     clientSessions.delete(clienteId);
+    console.log(`✅ [session-manager] Cliente ${clienteId} desconectado completamente`);
+    
     return { success: true, message: 'Desconectado correctamente' };
   } catch (error) {
     console.error(`❌ [session-manager] Error al desconectar cliente ${clienteId}:`, error.message);

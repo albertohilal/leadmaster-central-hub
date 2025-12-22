@@ -2,20 +2,31 @@
 
 > **Regla clave:** Ningún endpoint, router ni módulo debe tener código inline. Todo handler, lógica o respuesta debe estar en controladores o servicios desacoplados.
 
-## 🚨 ESTADO ACTUAL (19 dic 2025)
+## 🚨 ESTADO ACTUAL (21 dic 2025)
 
-**✅ COMPLETADOS:** Frontend, módulos desarrollados, tests, autenticación
-**❌ PENDIENTE CRÍTICO:** Integración final de módulos en servidor principal
+**✅ COMPLETADOS:** 
+- Frontend completo con autenticación JWT
+- Módulo session-manager VERIFICADO y OPERATIVO (21/12/2025)
+- Módulo sender desarrollado
+- Módulo listener con tests completos (29/29 passing)
+- Autenticación multi-tenant
 
-**Ver detalles completos en:** `/docs/PRIORIDADES_FRONTEND.md`
+**📋 PRÓXIMO:** Verificación de módulos sender y listener
+
+**Ver detalles completos en:** 
+- `/docs/PRIORIDADES_FRONTEND.md`
+- `/docs/VERIFICACION_SESSION_MANAGER.md` ✅
 
 ## Orden de prioridades
 
-1. **Gestión de sesiones/conexiones WhatsApp** ✅ _completado_
+1. **Gestión de sesiones/conexiones WhatsApp** ✅ _VERIFICADO 21/12/2025_
    - Multi-sesión, login/logout, estado, reconexión.
    - Endpoints: iniciar sesión, cerrar sesión, estado de sesión, logs.
    - Implementado con venom-bot centralizado en session-manager.
-2. **Envíos masivos (campañas, mensajes)** ✅ _completado_
+   - **Tests de verificación:** `test-session-direct.js`, `test-whatsapp-connection.js`
+   - **Documentación:** `/docs/VERIFICACION_SESSION_MANAGER.md`
+   - **Cliente de prueba:** Haby (ID: 51) - Conexión exitosa
+2. **Envíos masivos (campañas, mensajes)** ✅ _completado - pendiente verificación_
    - Creación y gestión de campañas, envíos, reportes.
    - Integración con la sesión activa del cliente.
    - Módulo sender integrado con session-manager.

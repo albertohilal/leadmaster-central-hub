@@ -19,6 +19,7 @@ Documentación completa del sistema LeadMaster Central Hub.
 
 ### 🔌 API y endpoints
 - **[ENDPOINTS_SESSION_MANAGER.md](ENDPOINTS_SESSION_MANAGER.md)** - Documentación de endpoints del session-manager
+- **[VERIFICACION_SESSION_MANAGER.md](VERIFICACION_SESSION_MANAGER.md)** - ✅ Verificación y pruebas del módulo session-manager (21/12/2025)
 
 ### 📋 Manuales de usuario
 - **[MANUAL_CAMPANAS.md](MANUAL_CAMPANAS.md)** - Manual completo del módulo de Campañas
@@ -26,6 +27,11 @@ Documentación completa del sistema LeadMaster Central Hub.
 
 ### 🚀 Guías rápidas
 - **[frontend/GUIA_RAPIDA.md](frontend/GUIA_RAPIDA.md)** - Inicio rápido para desarrollo frontend
+- **[DIFERENCIAS_LOCAL_VS_PRODUCCION.md](DIFERENCIAS_LOCAL_VS_PRODUCCION.md)** - Diferencias entre entornos de desarrollo y producción
+
+### 🔧 Deployment
+- **[GUIA_DEPLOYMENT.md](GUIA_DEPLOYMENT.md)** - Guía completa de deployment
+- **[../DEPLOY_CONTABO.md](../DEPLOY_CONTABO.md)** - Configuración específica para servidor Contabo
 
 ---
 

@@ -30,14 +30,17 @@ const SessionManager = () => {
       // Mapear estados del backend a estados del frontend
       if (state === 'conectado') {
         setSessionStatus('CONNECTED');
+        setShowQRModal(false); // Cerrar modal si está conectado
       } else if (state === 'conectando' || state === 'qr') {
         setSessionStatus('QR');
-        // Si está esperando QR, intentar obtenerlo
+        // Solo cargar QR, no abrir modal automáticamente
         if (stateRes.data.hasQR) {
-          loadQRCode();
+          const qrUrl = buildApiUrl(`/session-manager/qr?t=${Date.now()}`);
+          setQrCode(qrUrl);
         }
       } else {
         setSessionStatus('DISCONNECTED');
+        setShowQRModal(false);
       }
     } catch (error) {
       console.error('Error loading session data:', error);
@@ -49,12 +52,30 @@ const SessionManager = () => {
 
   const loadQRCode = async () => {
     try {
-      // Cargar QR como imagen desde el endpoint usando la URL base correcta
-      const qrUrl = buildApiUrl(`/session-manager/qr?t=${Date.now()}`);
-      setQrCode(qrUrl);
-      setShowQRModal(true);
+      setShowQRModal(true); // Abrir modal inmediatamente
+      setQrCode(null); // Limpiar QR anterior
+      
+      // Verificar que el QR esté disponible
+      const token = localStorage.getItem('token');
+      const response = await fetch(buildApiUrl('/session-manager/qr'), {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        // Crear URL de la imagen con timestamp para evitar caché
+        const qrUrl = buildApiUrl(`/session-manager/qr?t=${Date.now()}`);
+        setQrCode(qrUrl);
+      } else {
+        console.error('QR no disponible todavía');
+        alert('QR no disponible. Espera unos segundos e intenta de nuevo.');
+        setShowQRModal(false);
+      }
     } catch (error) {
       console.error('Error loading QR code:', error);
+      alert('Error al cargar QR. Verifica que estés conectando WhatsApp.');
+      setShowQRModal(false);
     }
   };
 
@@ -233,86 +254,28 @@ const SessionManager = () => {
       {/* Logs de Sesión */}
       <Card title="Logs Recientes" icon="📋">
         <div className="space-y-2">
-          {logs.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">
-              No hay logs disponibles
-            </p>
-          ) : (
-            <div className="max-h-96 overflow-y-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Evento</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Detalles</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {logs.map((log, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2 text-sm text-gray-600">{log.timestamp}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{log.event}</td>
-                      <td className="px-4 py-2 text-sm text-gray-600">{log.details}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <p className="text-sm text-gray-500 text-center py-8">
+            No hay logs disponibles en este momento
+          </p>
         </div>
       </Card>
 
-      {/* Modal QR Code */}
+      {/* Modal de QR Code */}
       <Modal
         isOpen={showQRModal}
         onClose={() => setShowQRModal(false)}
-        title="Escanear Código QR"
+        title="Escanea el código QR"
       >
-        <div className="flex flex-col items-center space-y-4">
+        <div className="text-center">
           {qrCode ? (
-            <>
-              <div className="p-4 bg-white rounded-lg shadow-lg">
-                <img 
-                  src={qrCode} 
-                  alt="QR Code WhatsApp" 
-                  className="w-64 h-64"
-                  onError={(e) => {
-                    console.error('Error cargando QR');
-                    // Reintentar carga cada 2 segundos
-                    setTimeout(() => {
-                      e.target.src = qrCode + '&retry=' + Date.now();
-                    }, 2000);
-                  }}
-                />
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-gray-600 font-semibold mb-2">
-                  Pasos para vincular:
-                </p>
-                <p className="text-sm text-gray-600">
-                  1. Abre WhatsApp en tu teléfono
-                </p>
-                <p className="text-sm text-gray-600">
-                  2. Ve a Configuración {'>'} Dispositivos vinculados
-                </p>
-                <p className="text-sm text-gray-600">
-                  3. Toca en "Vincular un dispositivo"
-                </p>
-                <p className="text-sm text-gray-600">
-                  4. Escanea este código QR
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <LoadingSpinner text="Generando código QR..." />
-              <p className="text-sm text-gray-500 mt-4">
-                Esto puede tardar hasta 30 segundos...
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                Chrome está iniciando en segundo plano
+            <div>
+              <img src={qrCode} alt="QR Code" className="mx-auto mb-4" />
+              <p className="text-sm text-gray-600">
+                Escanea este código QR con WhatsApp Web desde tu teléfono
               </p>
             </div>
+          ) : (
+            <LoadingSpinner text="Generando código QR..." />
           )}
         </div>
       </Modal>
@@ -321,3 +284,4 @@ const SessionManager = () => {
 };
 
 export default SessionManager;
+               
