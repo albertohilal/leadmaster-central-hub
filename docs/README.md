@@ -19,6 +19,7 @@ Documentación completa del sistema LeadMaster Central Hub.
 
 ### 🔌 API y endpoints
 - **[ENDPOINTS_SESSION_MANAGER.md](ENDPOINTS_SESSION_MANAGER.md)** - Documentación de endpoints del session-manager
+- **[PRUEBAS_SESSION_MANAGER.md](PRUEBAS_SESSION_MANAGER.md)** - ✅ Pruebas E2E con Playwright (22/12/2025)
 - **[VERIFICACION_SESSION_MANAGER.md](VERIFICACION_SESSION_MANAGER.md)** - ✅ Verificación y pruebas del módulo session-manager (21/12/2025)
 
 ### 📋 Manuales de usuario

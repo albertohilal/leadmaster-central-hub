@@ -5,7 +5,7 @@ const config = {
   timeout: 60000, // Aumentado para pruebas E2E
   retries: 1,
   use: {
-    baseURL: 'http://localhost:3011', // Puerto correcto del backend
+    baseURL: 'http://localhost:3012', // Puerto correcto del backend
     extraHTTPHeaders: {
       'Content-Type': 'application/json',
     },
@@ -28,7 +28,7 @@ const config = {
       name: 'E2E Tests - Campaigns',
       testMatch: '**/*.e2e.spec.ts',
       use: {
-        baseURL: 'http://localhost:5173', // Frontend para E2E
+        baseURL: 'http://localhost:5174', // Frontend para E2E
         viewport: { width: 1280, height: 720 },
       },
     },
@@ -40,14 +40,14 @@ const config = {
   // Configuración para servidores locales
   webServer: [
     {
-      command: 'node src/index.js',
-      port: 3011,
+      command: 'PORT=3012 node src/index.js',
+      port: 3012,
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,
     },
     {
       command: 'npm run dev',
-      port: 5173,
+      port: 5174,
       cwd: './frontend',
       timeout: 120 * 1000,
       reuseExistingServer: !process.env.CI,

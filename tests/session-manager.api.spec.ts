@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3011';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3012';
 
 // Helper function to get auth token
 async function getAuthToken(request) {
