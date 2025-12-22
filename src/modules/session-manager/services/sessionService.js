@@ -82,7 +82,7 @@ function getOrCreateClient(clienteId, sessionName = null) {
     venom
       .create({
         session: name,
-        headless: 'new',
+        headless: false, // TEMPORAL: headless causa que no genere QR
         useChrome: true,
         executablePath: '/usr/bin/google-chrome-stable',
         disableSpins: true,
@@ -97,7 +97,9 @@ function getOrCreateClient(clienteId, sessionName = null) {
           `--user-data-dir=${userDataDir}`,
           '--remote-debugging-port=0',
           '--disable-extensions',
-          '--disable-features=Translate,OptimizationHints'
+          '--disable-features=Translate,OptimizationHints',
+          '--start-maximized',
+          '--window-position=0,0'
         ],
         puppeteerOptions: {
           args: [
@@ -105,7 +107,7 @@ function getOrCreateClient(clienteId, sessionName = null) {
             '--disable-setuid-sandbox',
             `--user-data-dir=${userDataDir}`
           ],
-          headless: 'new'
+          headless: false
         },
         catchQR: (base64Qr, asciiQR, attempts, urlCode) => {
           const sess = clientSessions.get(clienteId);
