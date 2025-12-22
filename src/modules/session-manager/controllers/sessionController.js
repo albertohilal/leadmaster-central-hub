@@ -34,6 +34,10 @@ exports.login = (req, res) => {
       });
     }
     
+    // NUEVO: Limpiar tokens corruptos antes de iniciar
+    console.log(`🧹 [session-controller] Limpiando tokens corruptos para cliente ${clienteId}`);
+    sessionService.cleanTokens(clienteId);
+    
     // Iniciar conexión para este cliente
     console.log(`🟢 [session-controller] Cliente ${clienteId} solicitó conectar WhatsApp`);
     sessionService.getOrCreateClient(clienteId);

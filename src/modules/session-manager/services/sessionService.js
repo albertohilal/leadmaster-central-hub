@@ -268,6 +268,27 @@ async function disconnect(clienteId) {
 }
 
 /**
+ * Limpiar tokens corruptos para un cliente
+ */
+function cleanTokens(clienteId) {
+  const tokenPath = path.join(__dirname, '../../../tokens', `client_${clienteId}`);
+  const chromePath = path.join(process.env.HOME || '/root', '.leadmaster-chrome-profiles', `client_${clienteId}`);
+  
+  try {
+    if (fs.existsSync(tokenPath)) {
+      fs.rmSync(tokenPath, { recursive: true, force: true });
+      console.log(`🗑️ [session-manager] Tokens eliminados: ${tokenPath}`);
+    }
+    if (fs.existsSync(chromePath)) {
+      fs.rmSync(chromePath, { recursive: true, force: true });
+      console.log(`🗑️ [session-manager] Chrome profile eliminado: ${chromePath}`);
+    }
+  } catch (error) {
+    console.error(`❌ [session-manager] Error limpiando tokens para cliente ${clienteId}:`, error.message);
+  }
+}
+
+/**
  * Obtener todas las sesiones activas
  */
 function getAllSessions() {
@@ -290,6 +311,7 @@ module.exports = {
   isReady,
   sendMessage,
   disconnect,
+  cleanTokens,
   getAllSessions,
   loadExistingSessions
 };
