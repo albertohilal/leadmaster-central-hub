@@ -90,7 +90,8 @@ function getOrCreateClient(clienteId, sessionName = null) {
           '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
-          '--disable-gpu'
+          '--disable-gpu',
+          '--display=:99'
         ],
         puppeteerOptions: {
           args: ['--no-sandbox', '--disable-setuid-sandbox'],
