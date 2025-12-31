@@ -85,26 +85,23 @@ exports.state = (req, res) => {
 // Endpoint para obtener el QR como imagen PNG (base64)
 exports.qr = async (req, res) => {
   const clienteId = req.user.cliente_id;
-  const qr = sessionService.getQR(clienteId);
+  const qrBase64 = sessionService.getQR(clienteId);
   
-  if (!qr) {
+  if (!qrBase64) {
     return res.status(404).json({ 
       error: 'QR no disponible. Espera a que se genere o verifica el estado en /session-manager/state' 
     });
   }
   
   try {
-    const qrDataURL = await QRCode.toDataURL(qr, {
-      width: 300,
-      margin: 2,
-      color: { dark: '#000000', light: '#FFFFFF' }
-    });
-    const base64Data = qrDataURL.replace(/^data:image\/png;base64,/, '');
+    // whatsapp-web.js + QRCode.toDataURL() genera QR en base64
+    const base64Data = qrBase64.replace(/^data:image\/png;base64,/, '');
     const imgBuffer = Buffer.from(base64Data, 'base64');
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(imgBuffer);
   } catch (err) {
+    console.error('❌ [session-controller] Error sirviendo QR:', err.message);
     res.status(500).json({ error: 'Error generando QR', details: err.message });
   }
 };
